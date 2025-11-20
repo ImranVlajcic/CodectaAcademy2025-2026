@@ -1,0 +1,94 @@
+CREATE TABLE Account (
+    userID SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    accPassword VARCHAR(255) NOT NULL,
+    realName VARCHAR(100),
+    realSurname VARCHAR(100),
+    phoneNumber VARCHAR(30)
+);
+
+CREATE TABLE Wallet (
+    walletID SERIAL PRIMARY KEY,
+    userID INT NOT NULL,
+    balance DECIMAL(15, 4) DEFAULT 0.00,
+    currency VARCHAR(3) DEFAULT 'USD',
+    purpose VARCHAR(100),
+    FOREIGN KEY (userID) REFERENCES Account(userID) ON DELETE CASCADE
+);
+
+CREATE TABLE Category (
+    categoryID SERIAL PRIMARY KEY,
+    categoryName VARCHAR(100) NOT NULL,
+    reason VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE Transaction (
+    transactionID SERIAL PRIMARY KEY,
+    walletID INT NOT NULL,
+    categoryID INT NOT NULL,
+    transactionTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    transactionDate DATE NOT NULL,
+    amount DECIMAL(15, 4) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    description VARCHAR(255),
+    FOREIGN KEY (walletID) REFERENCES Wallet(walletID) ON DELETE CASCADE,
+    FOREIGN KEY (categoryID) REFERENCES Category(categoryID) ON DELETE RESTRICT
+);
+
+CREATE TABLE StandardExpense (
+    expenseID SERIAL PRIMARY KEY,
+    walletID INT NOT NULL,
+    reason VARCHAR(20) NOT NULL,
+    description VARCHAR(255),
+    amount DECIMAL(15, 2) NOT NULL,
+    frequency VARCHAR(20) NOT NULL,
+    FOREIGN KEY (walletID) REFERENCES Wallet(walletID) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_wallet_user ON Wallet(userID);
+CREATE INDEX idx_transaction_wallet ON Transaction(walletID);
+CREATE INDEX idx_transaction_category ON Transaction(categoryID);
+CREATE INDEX idx_transaction_date ON Transaction(transactionDate);
+CREATE INDEX idx_standard_expense_wallet ON StandardExpense(walletID);
+
+INSERT INTO Account (username, email, accPassword, realName, realSurname, phoneNumber) VALUES
+('mujo_mujic', 'mujo.mujic@gmail.com', 'hash_lozinka_123', 'Mujo', 'Mujic', '+38761234567'),
+('imran_vlajcic', 'imran.vlajcic@gmail.com', 'hash_lozinka_456', 'Imran', 'Vlajcic', '+38762345678');
+
+INSERT INTO Wallet (userID, balance, currency, purpose) VALUES
+(1, 2500.00, 'BAM', 'Glavni racun'),
+(1, 800.00, 'BAM', 'Stednja'),
+(2, 2000.00, 'BAM', 'Glavni racun');
+
+INSERT INTO Category (categoryName, reason) VALUES
+('Plata', 'prihod'),
+('Freelance', 'prihod'),
+('Poklon', 'prihod'),
+('Namirnice', 'rashod'),
+('Stanarina', 'rashod'),
+('Rezije', 'rashod'),
+('Servis', 'rashod'),
+('Putovanje', 'rashod'),
+('Odjeca', 'rashod'),
+('Zdravstvo', 'rashod'),
+('Zabava','rashod');
+
+INSERT INTO Transaction (walletID, categoryID, transactionDate, amount, currency, description) VALUES
+(1, 1, '2024-11-01', 1800.00, 'BAM', 'Mjesecna plata'),
+(1, 4, '2024-11-03', -120.00, 'BAM', 'Kupovina u Bingu'),
+(1, 5, '2024-11-01', -600.00, 'BAM', 'Stanarina za novembar'),
+(2, 8, '2024-11-08', -45.00, 'BAM', 'Mjesecno gorivo'),
+(2, 9, '2024-11-10', -60.00, 'BAM', 'Kino'),
+(2, 1, '2024-11-01', 2000.00, 'BAM', 'Mjesecna plata'),
+(3, 2, '2024-11-15', 450.00, 'BAM', 'Izrada web sajta'),
+(3, 4, '2024-11-12', -95.00, 'BAM', 'Kupovina u Konzumu'),
+(3, 3, '2024-11-14', 75.00, 'BAM', 'Poklon od prijatelja');
+
+INSERT INTO StandardExpense (walletID, reason, description, amount, frequency) VALUES
+(1, 'Stanarina', 'Placanje stanarina', 600.00, 'mjesecno'),
+(1, 'Internet', 'Internet paket', 35.00, 'mjesecno'),
+(1, 'Namirnice', 'Prosjecna sedmicna potrosnja', 120.00, 'sedmicno'),
+(3, 'Teretana', 'Mjesecna clanarina', 60.00, 'mjesecno'),
+(2, 'Osiguranje', 'Osiguranje automobila', 80.00, 'godisnje'),
+(1, 'Telefon', 'Mobilna pretplata', 25.00, 'mjesecno');
