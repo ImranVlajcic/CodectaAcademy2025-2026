@@ -28,7 +28,7 @@ CREATE TABLE Wallet (
 CREATE TABLE Category (
     categoryID SERIAL PRIMARY KEY,
     categoryName VARCHAR(100) NOT NULL,
-    reason VARCHAR(20) NOT NULL CHECK (reason IN ('prihod', 'rashod'))
+    reason VARCHAR(20) NOT NULL CHECK (reason IN ('Income', 'Expense'))
 );
 
 CREATE TABLE Transactions (
@@ -38,7 +38,7 @@ CREATE TABLE Transactions (
     currencyID INT NOT NULL,
     transactionTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     transactionDate DATE NOT NULL,
-    transactionType VARCHAR(30) CHECK (transactionType IN ('gotovina','kartica')),
+    transactionType VARCHAR(30) CHECK (transactionType IN ('Cash','Card')),
     amount DECIMAL(15, 4) NOT NULL,
     description VARCHAR(255),
     FOREIGN KEY (walletID) REFERENCES Wallet(walletID) ON DELETE CASCADE,
@@ -52,7 +52,7 @@ CREATE TABLE StandardExpense (
     reason VARCHAR(30) NOT NULL,
     description VARCHAR(255),
     amount DECIMAL(15, 4) NOT NULL,
-    frequency VARCHAR(30) CHECK (frequency IN ('mjesecno','sedmicno','godisnje','dnevno')),
+    frequency VARCHAR(30) CHECK (frequency IN ('Monthly','Weekly','Yearly','Daily')),
     nextDate DATE NOT NULL,
     FOREIGN KEY (walletID) REFERENCES Wallet(walletID) ON DELETE CASCADE
 );
@@ -71,33 +71,33 @@ INSERT INTO Wallet (userID, currencyID, balance, purpose) VALUES
 (2, 2, 2000.00, 'Glavni racun');
 
 INSERT INTO Category (categoryName, reason) VALUES
-('Plata', 'prihod'),
-('Freelance', 'prihod'),
-('Poklon', 'prihod'),
-('Namirnice', 'rashod'),
-('Stanarina', 'rashod'),
-('Rezije', 'rashod'),
-('Servis', 'rashod'),
-('Putovanje', 'rashod'),
-('Odjeca', 'rashod'),
-('Zdravstvo', 'rashod'),
-('Zabava','rashod');
+('Plata', 'Income'),
+('Freelance', 'Income'),
+('Poklon', 'Income'),
+('Namirnice', 'Expense'),
+('Stanarina', 'Expense'),
+('Rezije', 'Expense'),
+('Servis', 'Expense'),
+('Putovanje', 'Expense'),
+('Odjeca', 'Expense'),
+('Zdravstvo', 'Expense'),
+('Zabava','Expense');
 
 INSERT INTO Transactions (walletID, categoryID, currencyID, transactionDate, transactionType, amount, description) VALUES
-(1, 1, 1,'2024-11-01', 'kartica', 1800.00, 'Mjesecna plata'),
-(1, 4, 1,'2024-11-03', 'kartica',  -120.00, 'Kupovina u Bingu'),
-(1, 5, 1,'2024-11-01', 'kartica',  -600.00, 'Stanarina za novembar'),
-(2, 8, 1,'2024-11-08', 'gotovina',  -45.00, 'Mjesecno gorivo'),
-(2, 9, 1,'2024-11-10', 'gotovina',   -60.00, 'Kino'),
-(2, 1, 1,'2024-11-01', 'kartica',  2000.00, 'Mjesecna plata'),
-(3, 2, 1,'2024-11-15', 'gotovina',   450.00, 'Izrada web sajta'),
-(3, 4, 1,'2024-11-12', 'gotovina',   -95.00, 'Kupovina u Konzumu'),
-(3, 3, 1,'2024-11-14', 'gotovina',   75.00, 'Poklon od prijatelja');
+(1, 1, 1,'2024-11-01', 'Card', 1800.00, 'Mjesecna plata'),
+(1, 4, 1,'2024-11-03', 'Card',  -120.00, 'Kupovina u Bingu'),
+(1, 5, 1,'2024-11-01', 'Card',  -600.00, 'Stanarina za novembar'),
+(2, 8, 1,'2024-11-08', 'Cash',  -45.00, 'Monthly gorivo'),
+(2, 9, 1,'2024-11-10', 'Cash',   -60.00, 'Kino'),
+(2, 1, 1,'2024-11-01', 'Card',  2000.00, 'Mjesecna plata'),
+(3, 2, 1,'2024-11-15', 'Cash',   450.00, 'Izrada web sajta'),
+(3, 4, 1,'2024-11-12', 'Cash',   -95.00, 'Kupovina u Konzumu'),
+(3, 3, 1,'2024-11-14', 'Cash',   75.00, 'Poklon od prijatelja');
 
 INSERT INTO StandardExpense (walletID, reason, description, amount, frequency, nextDate) VALUES
-(1, 'Stanarina', 'Placanje stanarina', 600.00, 'mjesecno', '2025-11-14'),
-(1, 'Internet', 'Internet paket', 35.00, 'mjesecno', '2025-11-14'),
-(1, 'Namirnice', 'Prosjecna sedmicna potrosnja', 120.00, 'sedmicno', '2026-12-01'),
-(3, 'Teretana', 'Mjesecna clanarina', 60.00, 'mjesecno', '2025-03-17'),
-(2, 'Osiguranje', 'Osiguranje automobila', 80.00, 'godisnje', '2025-09-10'),
-(1, 'Telefon', 'Mobilna pretplata', 25.00, 'mjesecno', '2025-06-27');
+(1, 'Stanarina', 'Placanje stanarina', 600.00, 'Monthly', '2025-11-14'),
+(1, 'Internet', 'Internet paket', 35.00, 'Monthly', '2025-11-14'),
+(1, 'Namirnice', 'Prosjecna sedmicna potrosnja', 120.00, 'Weekly', '2026-12-01'),
+(3, 'Teretana', 'Mjesecna clanarina', 60.00, 'Monthly', '2025-03-17'),
+(2, 'Osiguranje', 'Osiguranje automobila', 80.00, 'Yearly', '2025-09-10'),
+(1, 'Telefon', 'Mobilna pretplata', 25.00, 'Monthly', '2025-06-27');

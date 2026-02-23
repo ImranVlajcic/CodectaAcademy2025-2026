@@ -10,4 +10,10 @@
     <PackageReference Include="ErrorOr" Version="2.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Errors\AccountErrors\" />
+    <Folder Include="Errors\CategoryErrors\" />
+    <Folder Include="Errors\CurrencyErrors\" />
+  </ItemGroup>
+
 </Project>
