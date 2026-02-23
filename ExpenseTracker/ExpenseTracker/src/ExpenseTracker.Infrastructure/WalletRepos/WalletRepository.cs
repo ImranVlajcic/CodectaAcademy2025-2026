@@ -170,12 +170,10 @@ namespace ExpenseTracker.Infrastructure.WalletRepos
             }
             catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation)
             {
-                if (ex.Message.Contains("Wallet"))
-                    return TransactionErrors.Validation.InvalidWalletId;
-                if (ex.Message.Contains("Category"))
-                    return TransactionErrors.Validation.InvalidCategoryId;
+                if (ex.Message.Contains("User"))
+                    return WalletErrors.Validation.InvalidUserId;
                 if (ex.Message.Contains("Currency"))
-                    return TransactionErrors.Validation.InvalidCurrencyId;
+                    return WalletErrors.Validation.InvalidCurrencyId;;
 
                 return DatabaseErrors.Database.OperationFailed;
             }
@@ -239,12 +237,10 @@ namespace ExpenseTracker.Infrastructure.WalletRepos
             }
             catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation)
             {
-                if (ex.Message.Contains("Wallet"))
-                    return TransactionErrors.Validation.InvalidWalletId;
-                if (ex.Message.Contains("Category"))
-                    return TransactionErrors.Validation.InvalidCategoryId;
+                if (ex.Message.Contains("User"))
+                    return WalletErrors.Validation.InvalidUserId;
                 if (ex.Message.Contains("Currency"))
-                    return TransactionErrors.Validation.InvalidCurrencyId;
+                    return WalletErrors.Validation.InvalidCurrencyId; ;
 
                 return DatabaseErrors.Database.OperationFailed;
             }

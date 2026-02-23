@@ -295,7 +295,7 @@ namespace ExpenseTracker.Infrastructure.StandardExpenseRepos
             }
             catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation)
             {
-                return TransactionErrors.Conflict.TransactionInUse;
+                return StandardExpenseErrors.Conflict.StandardExpenseInUse;
             }
             catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
             {

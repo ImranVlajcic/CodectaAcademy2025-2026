@@ -40,7 +40,7 @@ namespace ExpenseTracker.Domain.Errors.StandardExpenseErrors
 
         public static class Conflict
         {
-            public static Error TransactionInUse => Error.Conflict(
+            public static Error StandardExpenseInUse => Error.Conflict(
                 code: "StandardExpense.Conflict.InUse",
                 description: "Cannot delete standard expense as it is referenced by other records.");
 
