@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Application.AccountFolders.Interface.Application;
+using ExpenseTracker.Application.AccountFolders.Services;
 using ExpenseTracker.Contracts.AccountContracts;
 using ExpenseTracker.Domain.AccountData;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ namespace ExpenseTracker.WebApi.Controllers.AccountController
     public class AccountController : ApiControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly ILogger<AccountService> _logger;
 
         public AccountController(IAccountService accountService)
         {
@@ -42,7 +44,7 @@ namespace ExpenseTracker.WebApi.Controllers.AccountController
             {
                 username = request.username,
                 email = request.email,
-                accPassword = request.accPassword, 
+                passwordHash = request.password, 
                 realName = request.realName,
                 realSurname = request.realSurname,
                 phoneNumber = request.phoneNumber
@@ -50,10 +52,13 @@ namespace ExpenseTracker.WebApi.Controllers.AccountController
 
             var result = await _accountService.CreateAccountAsync(account, cancellationToken);
 
-            return CreatedAtAction(
-                nameof(GetAccountById),
-                new { id = result.userID },
-                result);
+            return result.Match(
+                created => CreatedAtAction(
+                    nameof(GetAccountById),
+                    new { id = created.userID },
+                    created),
+                errors => Problem(errors)
+            );
         }
 
         [HttpPut("{id}")]
@@ -67,7 +72,7 @@ namespace ExpenseTracker.WebApi.Controllers.AccountController
                 userID = id,
                 username = request.username,
                 email = request.email,
-                accPassword = request.accPassword, 
+                passwordHash = request.password, 
                 realName = request.realName,
                 realSurname = request.realSurname,
                 phoneNumber = request.phoneNumber

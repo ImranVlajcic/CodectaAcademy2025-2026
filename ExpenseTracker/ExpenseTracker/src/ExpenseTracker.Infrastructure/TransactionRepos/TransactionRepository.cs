@@ -181,7 +181,7 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
             }
             catch(NpgsqlException ex) when(ex.SqlState == UniqueViolation) 
             {
-                return DatabaseErrors.Database.DuplicateTransaction;
+                return DatabaseErrors.Database.DuplicateRow;
             }
             catch (NpgsqlException ex) when(ex.SqlState == ForeignKeyViolation) 
             {
@@ -259,7 +259,7 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
             }
             catch (NpgsqlException ex) when (ex.SqlState == UniqueViolation) 
             {
-                return DatabaseErrors.Database.DuplicateTransaction;
+                return DatabaseErrors.Database.DuplicateRow;
             }
             catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation) 
             {

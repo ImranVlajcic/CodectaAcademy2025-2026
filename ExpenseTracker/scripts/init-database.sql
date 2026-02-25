@@ -2,11 +2,22 @@ CREATE TABLE Account (
     userID SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
-    accPassword VARCHAR(255) NOT NULL,
+    passwordHash VARCHAR(255) NOT NULL,
     realName VARCHAR(100),
     realSurname VARCHAR(100),
     phoneNumber VARCHAR(30)
+
+    createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lastLoginAt TIMESTAMP NULL,
+    isActive BOOLEAN NOT NULL DEFAULT TRUE,
+    refreshToken TEXT NULL,
+    refreshTokenExpiryTime TIMESTAMP NULL
 );
+
+CREATE INDEX idx_account_email ON Account(email);
+CREATE INDEX idx_account_username ON Account(username);
+CREATE INDEX idx_account_refresh_token ON Account(refreshToken);
+CREATE INDEX idx_account_isactive ON Account(isActive);
 
 CREATE TABLE Currency(
     currencyID  SERIAL PRIMARY KEY,
@@ -57,9 +68,9 @@ CREATE TABLE StandardExpense (
     FOREIGN KEY (walletID) REFERENCES Wallet(walletID) ON DELETE CASCADE
 );
 
-INSERT INTO Account (username, email, accPassword, realName, realSurname, phoneNumber) VALUES
-('mujo_mujic', 'mujo.mujic@gmail.com', 'hash_lozinka_123', 'Mujo', 'Mujic', '+38761234567'),
-('imran_vlajcic', 'imran.vlajcic@gmail.com', 'hash_lozinka_456', 'Imran', 'Vlajcic', '+38762345678');
+INSERT INTO Account (username, email, passwordHash, realName, realSurname, phoneNumber, createdAt, isActive) VALUES
+('mujo_mujic', 'mujo.mujic@gmail.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzpLaEkKrO', 'Mujo', 'Mujic', '+38761234567', CURRENT_TIMESTAMP, TRUE),
+('imran_vlajcic', 'imran.vlajcic@gmail.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzpLaEkKrO', 'Imran', 'Vlajcic', '+38762345678', CURRENT_TIMESTAMP, TRUE);
 
 INSERT INTO Currency(currencyCode, currencyName, rateToEuro) VALUES
 ('EUR','Euro',1.0),

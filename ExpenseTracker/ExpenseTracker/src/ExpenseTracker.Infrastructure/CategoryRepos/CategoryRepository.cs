@@ -153,7 +153,7 @@ namespace ExpenseTracker.Infrastructure.CategoryRepos
             }
             catch (NpgsqlException ex) when (ex.SqlState == UniqueViolation)
             {
-                return DatabaseErrors.Database.DuplicateTransaction;
+                return DatabaseErrors.Database.DuplicateRow;
             }
             catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
             {
@@ -206,7 +206,7 @@ namespace ExpenseTracker.Infrastructure.CategoryRepos
             }
             catch (NpgsqlException ex) when (ex.SqlState == UniqueViolation)
             {
-                return DatabaseErrors.Database.DuplicateTransaction;
+                return DatabaseErrors.Database.DuplicateRow;
             }
             catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
             {

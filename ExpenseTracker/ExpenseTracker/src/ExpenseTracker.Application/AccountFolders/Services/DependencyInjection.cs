@@ -9,7 +9,10 @@ namespace ExpenseTracker.Application.AccountFolders.Services
 
         public static IServiceCollection AddAccountApplication(this IServiceCollection services)
         {
-            services.TryAddSingleton<IAccountService, AccountService>();
+            services.TryAddScoped<IAccountService, AccountService>();
+
+            services.TryAddScoped<IAuthenticationService, AuthenticationService>();
+
             return services;
         }
     }
