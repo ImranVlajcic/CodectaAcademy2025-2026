@@ -60,6 +60,26 @@ namespace ExpenseTracker.Domain.Errors.AccountErrors
             public static Error InvalidRefreshToken => Error.Unauthorized(
                 code: "Account.InvalidRefreshToken",
                 description: "Invalid or expired refresh token.");
+
+            public static Error UsernameTooLong => Error.Validation(
+                code: "Account.UsernameTooLong",
+                description: "Username cannot exceed 50 characters.");
+
+            public static Error EmailTooLong => Error.Validation(
+                code: "Account.EmailTooLong",
+                description: "Email cannot exceed 150 characters.");
+
+            public static Error RealNameTooLong => Error.Validation(
+                code: "Account.RealNameTooLong",
+                description: "Real name cannot exceed 100 characters.");
+
+            public static Error RealSurnameTooLong => Error.Validation(
+                code: "Account.RealSurnameTooLong",
+                description: "Real surname cannot exceed 100 characters.");
+
+            public static Error PhoneNumberTooLong => Error.Validation(
+                code: "Account.PhoneNumberTooLong",
+                description: "Phone number cannot exceed 30 characters.");
         }
 
         public static class Database

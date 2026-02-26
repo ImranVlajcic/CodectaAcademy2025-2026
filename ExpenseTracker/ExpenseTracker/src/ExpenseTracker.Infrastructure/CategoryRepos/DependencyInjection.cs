@@ -13,7 +13,7 @@ namespace ExpenseTracker.Infrastructure.CategoryRepos
         {
             services.TryAddCategoryOptions(configuration.GetCategoryOptions());
 
-            services.TryAddSingleton<ICategoryRepository, CategoryRepository>();
+            services.TryAddScoped<ICategoryRepository, CategoryRepository>();
 
             return services;
         }

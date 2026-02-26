@@ -12,7 +12,7 @@ namespace ExpenseTracker.Infrastructure.WalletRepos
         {
             services.TryAddWalletOptions(configuration.GetWalletOptions());
 
-            services.TryAddSingleton<IWalletRepository, WalletRepository>();
+            services.TryAddScoped<IWalletRepository, WalletRepository>();
 
             return services;
         }

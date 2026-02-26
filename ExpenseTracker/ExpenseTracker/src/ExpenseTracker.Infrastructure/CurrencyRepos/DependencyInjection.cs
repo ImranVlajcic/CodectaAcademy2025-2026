@@ -12,7 +12,7 @@ namespace ExpenseTracker.Infrastructure.CurrencyRepos
         {
             services.TryAddCurrencyOptions(configuration.GetCurrencyOptions());
 
-            services.TryAddSingleton<ICurrencyRepository, CurrencyRepository>();
+            services.TryAddScoped<ICurrencyRepository, CurrencyRepository>();
 
             return services;
         }

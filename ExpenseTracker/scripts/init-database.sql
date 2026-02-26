@@ -5,8 +5,7 @@ CREATE TABLE Account (
     passwordHash VARCHAR(255) NOT NULL,
     realName VARCHAR(100),
     realSurname VARCHAR(100),
-    phoneNumber VARCHAR(30)
-
+    phoneNumber VARCHAR(30),
     createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lastLoginAt TIMESTAMP NULL,
     isActive BOOLEAN NOT NULL DEFAULT TRUE,

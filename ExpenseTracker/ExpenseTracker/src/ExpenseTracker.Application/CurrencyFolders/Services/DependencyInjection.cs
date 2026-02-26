@@ -11,7 +11,7 @@ namespace ExpenseTracker.Application.CurrencyFolders.Services
     {
         public static IServiceCollection AddCurrencyApplication(this IServiceCollection services)
         {
-            services.TryAddSingleton<ICurrencyService, CurrencyService>();
+            services.TryAddScoped<ICurrencyService, CurrencyService>();
             return services;
         }
     }

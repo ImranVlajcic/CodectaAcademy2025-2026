@@ -9,7 +9,7 @@ namespace ExpenseTracker.Application.CategoryFolders.Services
     {
         public static IServiceCollection AddCategoryApplication(this IServiceCollection services)
         {
-            services.TryAddSingleton<ICategoryService, CategoryService>();
+            services.TryAddScoped<ICategoryService, CategoryService>();
             return services;
         }
     }

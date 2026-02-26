@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Configuration
         .SetBasePath(AppContext.BaseDirectory);
 
-    // Create the logger
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
         .Filter.ByExcluding(logEvent =>
@@ -21,14 +20,12 @@ var builder = WebApplication.CreateBuilder(args);
             && property.ToString().StartsWith("\"/health"))
         .CreateLogger();
 
-    // Add logger to logging pipeline
     builder.Logging
         .ClearProviders()
         .AddSerilog(Log.Logger);
 
     builder.Host.UseSerilog();
 
-    // Add JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("Jwt");
     var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured");
     var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
@@ -43,7 +40,7 @@ var builder = WebApplication.CreateBuilder(args);
     .AddJwtBearer(options =>
     {
         options.SaveToken = true;
-        options.RequireHttpsMetadata = false; // Set to true in production with HTTPS
+        options.RequireHttpsMetadata = false; 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -53,7 +50,7 @@ var builder = WebApplication.CreateBuilder(args);
             ValidIssuer = issuer,
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-            ClockSkew = TimeSpan.Zero // Remove default 5 minute tolerance
+            ClockSkew = TimeSpan.Zero 
         };
 
         options.Events = new JwtBearerEvents
@@ -87,7 +84,7 @@ var builder = WebApplication.CreateBuilder(args);
     {
         c.SwaggerDoc("v1", new() { Title = "ExpenseTracker API", Version = "v1" });
 
-        // Add JWT Authentication to Swagger
+        
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             Description = @"JWT Authorization header using the Bearer scheme. 
@@ -115,7 +112,7 @@ var builder = WebApplication.CreateBuilder(args);
         });
     });
 
-    // Add application services
+    
     builder.Services
         .AddApplication(builder.Configuration)
         .AddInfrastructure(builder.Configuration);
@@ -127,10 +124,10 @@ var app = builder.Build();
 {
     app.UseRouting();
 
-    // Save service provider to static class
+    
     ServicePool.Create(app.Services);
 
-    // Add exception handler and request logging
+    
     app.UseExceptionHandler("/error");
 
     app.UseSerilogRequestLogging(options =>
@@ -148,14 +145,14 @@ var app = builder.Build();
         c.DocumentTitle = "ExpenseTracker API";
     });
 
-    // IMPORTANT: Order matters!
-    app.UseAuthentication();  // Must come before UseAuthorization
+    
+    app.UseAuthentication(); 
     app.UseAuthorization();
 
     app.MapControllers();
 }
 
-// Start the application
+
 app.Start();
 
 Log.Logger.Information("Application started");

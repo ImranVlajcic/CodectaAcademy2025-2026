@@ -8,7 +8,7 @@ namespace ExpenseTracker.Application.TransactionFolders.Services
     {
         public static IServiceCollection AddTransactionApplication(this IServiceCollection services)
         {
-            services.TryAddSingleton<ITransactionService, TransactionService>();
+            services.TryAddScoped<ITransactionService, TransactionService>();
             return services;
         }
 

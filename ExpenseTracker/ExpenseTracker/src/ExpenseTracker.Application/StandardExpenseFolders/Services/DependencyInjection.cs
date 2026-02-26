@@ -8,7 +8,7 @@ namespace ExpenseTracker.Application.StandardExpenseFolders.Services
     {
         public static IServiceCollection AddStandardExpenseApplication(this IServiceCollection services)
         {
-            services.TryAddSingleton<IStandardExpenseService, StandardExpenseService>();
+            services.TryAddScoped<IStandardExpenseService, StandardExpenseService>();
             return services;
         }
     }

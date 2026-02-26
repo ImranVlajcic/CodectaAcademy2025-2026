@@ -4,23 +4,29 @@ using ExpenseTracker.Contracts.StandardExpenseContracts;
 using ExpenseTracker.Domain.StandardExpenseData;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class StandardExpenseController : ApiControllerBase
     {
         private readonly IStandardExpenseService _standardExpenseService;
+        private readonly ILogger<StandardExpenseController> _logger;
 
-        public StandardExpenseController(IStandardExpenseService standardExpenseService)
+        public StandardExpenseController(IStandardExpenseService standardExpenseService, ILogger<StandardExpenseController> logger)
         {
             _standardExpenseService = standardExpenseService;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetStandardExpenses(CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetStandardExpenses called by user: {UserId}", userId);
             var result = await _standardExpenseService.GetStandardExpensesAsync(cancellationToken);
 
             return result.Match(
@@ -33,6 +39,8 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStandardExpenseById(int id, CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetStandardById called by user: {UserId} for standard expense: {ExpenseId}", userId, id);
             var result = await _standardExpenseService.GetStandardExpenseByIdAsync(id, cancellationToken);
 
             return result.Match(
@@ -46,6 +54,8 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
             [FromBody] StandardExpenseCon request,
             CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("CreateStandardExpense called for user: {UserId}", userId);
             var standardExpense = new StandardExpense
             {
                 walletID = request.walletID,
@@ -73,6 +83,8 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
             [FromBody] StandardExpenseCon request,
             CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("UpdateStandardExpense called by user: {UserId} for standard expense: {ExpenseId}", userId, id);
             var standardExpense = new StandardExpense
             {
                 expenseID = id,
@@ -95,76 +107,14 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStandardExpense(int id, CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("DeleteStandardExpense called by user: {UserId} for standard expense: {ExpenseId}", userId, id);
             var result = await _standardExpenseService.DeleteStandardExpenseAsync(id, cancellationToken);
 
             return result.Match(
                 _ => NoContent(),
                 errors => Problem(errors)
             );
-        }
-
-        private IActionResult Problem(List<Error> errors)
-        {
-            if (errors.Count == 0)
-            {
-                return Problem();
-            }
-
-            if (errors.All(error => error.Type == ErrorType.Validation))
-            {
-                return ValidationProblem(ModelStateDictionaryFrom(errors));
-            }
-
-            var firstError = errors[0];
-
-            return Problem(
-                statusCode: GetStatusCode(firstError.Type),
-                title: GetTitle(firstError.Type),
-                detail: firstError.Description,
-                type: GetType(firstError.Type)
-            );
-        }
-
-        private static int GetStatusCode(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            _ => StatusCodes.Status500InternalServerError,
-        };
-
-        private static string GetTitle(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation => "Bad Request",
-            ErrorType.NotFound => "Not Found",
-            ErrorType.Conflict => "Conflict",
-            ErrorType.Unauthorized => "Unauthorized",
-            ErrorType.Forbidden => "Forbidden",
-            _ => "Internal Server Error",
-        };
-
-        private static string GetType(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            ErrorType.NotFound => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-            ErrorType.Conflict => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-            ErrorType.Unauthorized => "https://tools.ietf.org/html/rfc7235#section-3.1",
-            ErrorType.Forbidden => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
-            _ => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-        };
-
-        private static ModelStateDictionary ModelStateDictionaryFrom(List<Error> errors)
-        {
-            var modelState = new ModelStateDictionary();
-
-            foreach (var error in errors)
-            {
-                modelState.AddModelError(error.Code, error.Description);
-            }
-
-            return modelState;
         }
     }
 }

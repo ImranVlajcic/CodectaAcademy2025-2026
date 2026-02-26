@@ -42,7 +42,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
         {
             _logger.LogInformation("Registration attempt for email: {Email}, username: {Username}", email, username);
 
-            // Validate input
             var validationResult = ValidateRegistrationInput(username, email, password, realName, realSurname, phoneNumber);
             if (validationResult.IsError)
             {
@@ -50,7 +49,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
                 return validationResult.Errors;
             }
 
-            // Check if email already exists
             var emailExistsResult = await _accountRepository.EmailExistsAsync(email, token);
             if (emailExistsResult.IsError)
             {
@@ -63,7 +61,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
                 return AccountErrors.Database.DuplicateEmail;
             }
 
-            // Check if username already exists
             var usernameExistsResult = await _accountRepository.UsernameExistsAsync(username, token);
             if (usernameExistsResult.IsError)
             {
@@ -76,10 +73,8 @@ namespace ExpenseTracker.Application.AccountFolders.Services
                 return AccountErrors.Database.DuplicateUsername;
             }
 
-            // Hash password
             var passwordHash = _passwordHasher.HashPassword(password);
 
-            // Create account
             var account = new Account
             {
                 username = username,
@@ -101,11 +96,9 @@ namespace ExpenseTracker.Application.AccountFolders.Services
 
             var createdAccount = createResult.Value;
 
-            // Generate tokens
             var accessToken = _tokenGenerator.GenerateAccessToken(createdAccount);
             var refreshToken = _tokenGenerator.GenerateRefreshToken();
 
-            // Save refresh token
             createdAccount.refreshToken = refreshToken;
             createdAccount.refreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays);
 
@@ -137,7 +130,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
         {
             _logger.LogInformation("Login attempt for email: {Email}", email);
 
-            // Validate input
             if (string.IsNullOrWhiteSpace(email))
             {
                 return AccountErrors.Validation.EmailRequired;
@@ -148,7 +140,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
                 return AccountErrors.Validation.PasswordRequired;
             }
 
-            // Get account by email
             var accountResult = await _accountRepository.GetByEmailAsync(email.ToLowerInvariant(), token);
             if (accountResult.IsError)
             {
@@ -158,25 +149,21 @@ namespace ExpenseTracker.Application.AccountFolders.Services
 
             var account = accountResult.Value;
 
-            // Check if account is active
             if (!account.isActive)
             {
                 _logger.LogWarning("Login failed - account inactive: {UserId}", account.userID);
                 return AccountErrors.Validation.AccountInactive;
             }
 
-            // Verify password
             if (!_passwordHasher.VerifyPassword(password, account.passwordHash))
             {
                 _logger.LogWarning("Login failed - invalid password for account: {UserId}", account.userID);
                 return AccountErrors.Validation.InvalidCredentials;
             }
 
-            // Generate tokens
             var accessToken = _tokenGenerator.GenerateAccessToken(account);
             var refreshToken = _tokenGenerator.GenerateRefreshToken();
 
-            // Update last login and save refresh token
             account.lastLoginAt = DateTime.UtcNow;
             account.refreshToken = refreshToken;
             account.refreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays);
@@ -185,7 +172,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
             if (updateResult.IsError)
             {
                 _logger.LogError("Failed to update account login info: {UserId}", account.userID);
-                // Don't fail login if we can't update these fields
             }
 
             _logger.LogInformation("Account logged in successfully: {UserId}", account.userID);
@@ -213,8 +199,6 @@ namespace ExpenseTracker.Application.AccountFolders.Services
                 return AccountErrors.Validation.InvalidRefreshToken;
             }
 
-            // Note: This is a simplified implementation
-            // In production, you'd want to implement GetByRefreshTokenAsync in the repository
             _logger.LogWarning("Refresh token validation not fully implemented");
             return AccountErrors.Validation.InvalidRefreshToken;
         }

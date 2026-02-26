@@ -12,7 +12,7 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
         {
             services.TryAddTransactionOptions(configuration.GetTransactionOptions());
 
-            services.TryAddSingleton<ITransactionRepository, TransactionRepository>();
+            services.TryAddScoped<ITransactionRepository, TransactionRepository>();
 
             return services;
         }

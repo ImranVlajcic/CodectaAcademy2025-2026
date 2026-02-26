@@ -8,7 +8,7 @@ namespace ExpenseTracker.Application.WalletFolders.Service
     {
         public static IServiceCollection AddWalletApplication(this IServiceCollection services)
         {
-            services.TryAddSingleton<IWalletService, WalletService>();
+            services.TryAddScoped<IWalletService, WalletService>();
             return services;
         }
     }

@@ -20,7 +20,7 @@ namespace ExpenseTracker.Application.CategoryFolders.Services
                 errors.Add(CategoryErrors.Validation.InvalidCategoryType);
             }
 
-            if (!string.IsNullOrWhiteSpace(category.categoryName) &&
+            if (!string.IsNullOrWhiteSpace(category.categoryName) ||
                 category.categoryName.Length > MaxNameLength)
             {
                 errors.Add(CategoryErrors.Validation.CategoryNameTooLong);

@@ -4,23 +4,29 @@ using ExpenseTracker.Contracts.WalletContracts;
 using ExpenseTracker.Domain.WalletData;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpenseTracker.WebApi.Controllers.WalletController
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class WalletController : ApiControllerBase
     {
         private readonly IWalletService _walletService;
+        private readonly ILogger<WalletController> _logger;
 
-        public WalletController(IWalletService walletService)
+        public WalletController(IWalletService walletService, ILogger<WalletController> logger)
         {
             _walletService = walletService;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetWallets(CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetWallets called by user: {UserId}", userId);
             var result = await _walletService.GetWalletsAsync(cancellationToken);
 
             return result.Match(
@@ -33,6 +39,8 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
         [HttpGet("{id}")]
         public async Task<IActionResult> GetWalletById(int id, CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetWalletById called by user: {UserId} for wallet: {WalletId}", userId, id);
             var result = await _walletService.GetWalletByIdAsync(id, cancellationToken);
 
             return result.Match(
@@ -46,6 +54,8 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
             [FromBody] WalletCon request,
             CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("CreateWallet called for user: {UserId}", userId);
             var wallet = new Wallet
             {
                 userID = request.userID,
@@ -71,6 +81,8 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
             [FromBody] WalletCon request,
             CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("UpdateWallet called by user: {UserId} for wallet: {WalletId}", userId, id);
             var wallet = new Wallet
             {
                 walletID = id,
@@ -91,76 +103,14 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWallet(int id, CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("DeleteWallet called by user: {UserId} for wallet: {WalletId}", userId, id);
             var result = await _walletService.DeleteWalletAsync(id, cancellationToken);
 
             return result.Match(
                 _ => NoContent(),
                 errors => Problem(errors)
             );
-        }
-
-        private IActionResult Problem(List<Error> errors)
-        {
-            if (errors.Count == 0)
-            {
-                return Problem();
-            }
-
-            if (errors.All(error => error.Type == ErrorType.Validation))
-            {
-                return ValidationProblem(ModelStateDictionaryFrom(errors));
-            }
-
-            var firstError = errors[0];
-
-            return Problem(
-                statusCode: GetStatusCode(firstError.Type),
-                title: GetTitle(firstError.Type),
-                detail: firstError.Description,
-                type: GetType(firstError.Type)
-            );
-        }
-
-        private static int GetStatusCode(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            _ => StatusCodes.Status500InternalServerError,
-        };
-
-        private static string GetTitle(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation => "Bad Request",
-            ErrorType.NotFound => "Not Found",
-            ErrorType.Conflict => "Conflict",
-            ErrorType.Unauthorized => "Unauthorized",
-            ErrorType.Forbidden => "Forbidden",
-            _ => "Internal Server Error",
-        };
-
-        private static string GetType(ErrorType errorType) => errorType switch
-        {
-            ErrorType.Validation => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            ErrorType.NotFound => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-            ErrorType.Conflict => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-            ErrorType.Unauthorized => "https://tools.ietf.org/html/rfc7235#section-3.1",
-            ErrorType.Forbidden => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
-            _ => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-        };
-
-        private static ModelStateDictionary ModelStateDictionaryFrom(List<Error> errors)
-        {
-            var modelState = new ModelStateDictionary();
-
-            foreach (var error in errors)
-            {
-                modelState.AddModelError(error.Code, error.Description);
-            }
-
-            return modelState;
         }
     }
 }

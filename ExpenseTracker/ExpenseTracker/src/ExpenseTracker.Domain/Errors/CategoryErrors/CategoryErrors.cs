@@ -15,7 +15,7 @@ namespace ExpenseTracker.Domain.Errors.CategoryErrors
         {
             public static Error InvalidCategoryType => Error.Validation(
                 code: "Category.InvalidCategoryType",
-                description: "Transaction type must be either 'Income' or 'Expense'.");
+                description: "Category type must be either 'Income' or 'Expense'.");
 
             public static Error CategoryNameTooLong => Error.Validation(
                 code: "Category.CategoryNameTooLong",

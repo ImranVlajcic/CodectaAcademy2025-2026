@@ -67,4 +67,17 @@ public abstract class ApiControllerBase : ControllerBase
 
         return ValidationProblem(modelStateDict);
     }
+
+    protected int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return 0;
+        }
+
+        return userId;
+    }
+
 }

@@ -14,12 +14,10 @@ namespace ExpenseTracker.Contracts.AccountContracts
         string RealSurname,
         string? PhoneNumber);
 
-    // Login request from client
     public record LoginRequest(
         string Email,
         string Password);
 
-    // Refresh token request from client
     public record RefreshTokenRequest(
         string RefreshToken);
 }

@@ -13,9 +13,10 @@ namespace ExpenseTracker.Application.AccountFolders.Services
         private readonly IAccountRepository _accountRepository;
         private readonly ILogger<AccountService> _logger;
 
-        public AccountService(IAccountRepository accountRepository)
+        public AccountService(IAccountRepository accountRepository, ILogger<AccountService> logger)
         {
             _accountRepository = accountRepository;
+            _logger = logger;
         }
         public async Task<ErrorOr<AllAccounts>> GetAccountsAsync(CancellationToken token)
         {

@@ -12,7 +12,7 @@ namespace ExpenseTracker.Infrastructure.StandardExpenseRepos
         {
             services.TryAddStandardExpenseOptions(configuration.GetStandardExpenseOptions());
 
-            services.TryAddSingleton<IStandardExpenseRepository, StandardExpenseRepository>();
+            services.TryAddScoped<IStandardExpenseRepository, StandardExpenseRepository>();
 
             return services;
         }
