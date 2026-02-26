@@ -6,6 +6,6 @@ namespace ExpenseTracker.Application.AccountFolders.Interface.Application
     {
         string GenerateAccessToken(Account account);
         string GenerateRefreshToken();
-        int? ValidateRefreshToken(string token);
+        //int? ValidateRefreshToken(string token);
     }
 }

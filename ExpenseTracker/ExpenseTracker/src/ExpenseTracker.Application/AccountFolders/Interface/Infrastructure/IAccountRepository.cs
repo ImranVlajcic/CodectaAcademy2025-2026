@@ -15,5 +15,7 @@ namespace ExpenseTracker.Application.AccountFolders.Interface.Infrastructure
         Task<ErrorOr<Account>> GetByEmailAsync(string email, CancellationToken token);
         Task<ErrorOr<bool>> EmailExistsAsync(string email, CancellationToken token);
         Task<ErrorOr<bool>> UsernameExistsAsync(string username, CancellationToken token);
+
+        Task<ErrorOr<Account>> GetByRefreshTokenAsync(string refreshToken, CancellationToken token);
     }
 }

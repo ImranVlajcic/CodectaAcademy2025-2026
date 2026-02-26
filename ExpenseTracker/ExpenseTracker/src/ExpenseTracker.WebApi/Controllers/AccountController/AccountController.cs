@@ -99,7 +99,7 @@ namespace ExpenseTracker.WebApi.Controllers.AccountController
                 userID = id,
                 username = request.username,
                 email = request.email,
-                passwordHash = passwordHash,  // Store hashed password, not plain text!
+                passwordHash = passwordHash,  
                 realName = request.realName,
                 realSurname = request.realSurname,
                 phoneNumber = request.phoneNumber

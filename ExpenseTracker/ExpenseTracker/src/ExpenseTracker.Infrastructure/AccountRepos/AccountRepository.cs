@@ -459,5 +459,75 @@ namespace ExpenseTracker.Infrastructure.AccountRepos
                 return DatabaseErrors.Database.OperationFailed;
             }
         }
+
+        public async Task<ErrorOr<Account>> GetByRefreshTokenAsync(string refreshToken, CancellationToken token)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching account by refresh token");
+
+                using var connection = CreateConnection();
+                await connection.OpenAsync(token);
+
+                const string sql = @"
+                    SELECT userID, username, email, passwordHash, realName, realSurname, phoneNumber,
+                           createdAt, lastLoginAt, isActive, refreshToken, refreshTokenExpiryTime
+                    FROM Account
+                    WHERE refreshToken = @RefreshToken 
+                      AND isActive = TRUE
+                      AND refreshTokenExpiryTime > @CurrentTime";
+
+                using var command = new NpgsqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@RefreshToken", refreshToken);
+                command.Parameters.AddWithValue("@CurrentTime", DateTime.UtcNow);
+                command.CommandTimeout = 30;
+
+                using var reader = await command.ExecuteReaderAsync(token);
+
+                if (await reader.ReadAsync(token))
+                {
+                    var account = new Account
+                    {
+                        userID = reader.GetInt32(0),
+                        username = reader.GetString(1),
+                        email = reader.GetString(2),
+                        passwordHash = reader.GetString(3),
+                        realName = reader.GetString(4),
+                        realSurname = reader.GetString(5),
+                        phoneNumber = reader.IsDBNull(6) ? null : reader.GetString(6),
+                        createdAt = reader.GetDateTime(7),
+                        lastLoginAt = reader.IsDBNull(8) ? null : reader.GetDateTime(8),
+                        isActive = reader.GetBoolean(9),
+                        refreshToken = reader.IsDBNull(10) ? null : reader.GetString(10),
+                        refreshTokenExpiryTime = reader.IsDBNull(11) ? null : reader.GetDateTime(11)
+                    };
+                    _logger.LogInformation("Account found with valid refresh token: {UserId}", account.userID);
+                    return account;
+                }
+
+                _logger.LogWarning("No account found with valid refresh token");
+                return AccountErrors.Validation.InvalidRefreshToken;
+            }
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
+            {
+                _logger.LogError(ex, "Database timeout fetching account by refresh token");
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (NpgsqlException ex) when (ex.Message.Contains("connection"))
+            {
+                _logger.LogError(ex, "Database connection failed fetching account by refresh token");
+                return DatabaseErrors.Database.ConnectionFailed;
+            }
+            catch (NpgsqlException ex)
+            {
+                _logger.LogError(ex, "Database error fetching account by refresh token");
+                return DatabaseErrors.Database.OperationFailed;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error fetching account by refresh token");
+                return DatabaseErrors.Database.OperationFailed;
+            }
+        }
     }
 }

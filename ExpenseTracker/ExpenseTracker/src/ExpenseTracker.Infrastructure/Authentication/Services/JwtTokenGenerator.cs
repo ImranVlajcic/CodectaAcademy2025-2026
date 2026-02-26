@@ -53,7 +53,7 @@ namespace ExpenseTracker.Infrastructure.Authentication.Services
             return Convert.ToBase64String(randomNumber);
         }
 
-        public int? ValidateRefreshToken(string token)
+        /*public int? ValidateRefreshToken(string token)
         {
             try
             {
@@ -64,6 +64,6 @@ namespace ExpenseTracker.Infrastructure.Authentication.Services
             {
                 return null;
             }
-        }
+        }*/
     }
 }

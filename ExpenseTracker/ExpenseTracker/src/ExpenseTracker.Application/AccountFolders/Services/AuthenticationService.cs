@@ -194,13 +194,67 @@ namespace ExpenseTracker.Application.AccountFolders.Services
         {
             _logger.LogInformation("Refresh token attempt");
 
+            
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
+                _logger.LogWarning("Refresh token is empty");
                 return AccountErrors.Validation.InvalidRefreshToken;
             }
 
-            _logger.LogWarning("Refresh token validation not fully implemented");
-            return AccountErrors.Validation.InvalidRefreshToken;
+            
+            var accountResult = await _accountRepository.GetByRefreshTokenAsync(refreshToken, token);
+            if (accountResult.IsError)
+            {
+                _logger.LogWarning("Refresh token validation failed - no account found or token expired");
+                return AccountErrors.Validation.InvalidRefreshToken;
+            }
+
+            var account = accountResult.Value;
+
+           
+            if (account.refreshTokenExpiryTime == null || account.refreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                _logger.LogWarning("Refresh token expired for account: {UserId}", account.userID);
+                return AccountErrors.Validation.InvalidRefreshToken;
+            }
+
+            
+            if (!account.isActive)
+            {
+                _logger.LogWarning("Refresh token used on inactive account: {UserId}", account.userID);
+                return AccountErrors.Validation.AccountInactive;
+            }
+
+            _logger.LogInformation("Refresh token validated for account: {UserId}", account.userID);
+
+            
+            var newAccessToken = _tokenGenerator.GenerateAccessToken(account);
+            var newRefreshToken = _tokenGenerator.GenerateRefreshToken();
+
+            
+            account.refreshToken = newRefreshToken;
+            account.refreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays);
+            account.lastLoginAt = DateTime.UtcNow;  
+
+            var updateResult = await _accountRepository.UpdateAccountAsync(account, token);
+            if (updateResult.IsError)
+            {
+                _logger.LogError("Failed to update refresh token for account: {UserId}", account.userID);
+                return updateResult.Errors;
+            }
+
+            _logger.LogInformation("New tokens generated successfully for account: {UserId}", account.userID);
+
+            return new AuthenticationResult(
+                account.userID,
+                account.username,
+                account.email,
+                account.realName,
+                account.realSurname,
+                newAccessToken,
+                newRefreshToken,
+                DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes),
+                account.refreshTokenExpiryTime.Value);
         }
 
         public async Task<ErrorOr<Success>> RevokeTokenAsync(int userId, CancellationToken token)
