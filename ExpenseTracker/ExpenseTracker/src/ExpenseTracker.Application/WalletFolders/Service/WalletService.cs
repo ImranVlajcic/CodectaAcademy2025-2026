@@ -98,5 +98,20 @@ namespace ExpenseTracker.Application.WalletFolders.Service
 
             return status;
         }
+
+        public async Task<ErrorOr<AllWallets>> GetWalletsByUserId(int userId, CancellationToken token)
+        {
+            var getWallets = await _walletRepository.GetWalletsByUserId(userId, token);
+
+            if (getWallets.IsError)
+            {
+                return getWallets.Errors;
+            }
+
+            return new AllWallets
+            {
+                wallets = getWallets.Value
+            };
+        }
     }
 }

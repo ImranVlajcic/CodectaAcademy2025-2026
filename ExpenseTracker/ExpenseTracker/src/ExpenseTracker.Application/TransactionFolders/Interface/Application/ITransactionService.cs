@@ -11,5 +11,6 @@ namespace ExpenseTracker.Application.TransactionFolders.Interface.Application
         Task<ErrorOr<Transaction>> CreateTransactionAsync(Transaction transaction, CancellationToken token);
         Task<ErrorOr<Updated>> UpdateTransactionAsync(Transaction transaction, CancellationToken token);
         Task<ErrorOr<Deleted>> DeleteTransactionAsync(int transactionId, CancellationToken token);
+        Task<ErrorOr<AllTransactions>> GetTransactionsByUserIdAsync(int userId, CancellationToken token);
     }
 }

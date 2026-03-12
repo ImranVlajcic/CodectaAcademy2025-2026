@@ -99,5 +99,20 @@ namespace ExpenseTracker.Application.StandardExpenseFolders.Services
 
             return status;
         }
+
+        public async Task<ErrorOr<AllStandardExpenses>> GetStandardExpensesByUserIdAsync(int userId, CancellationToken token)
+        {
+            var getStandardExpenses = await _standardExpenseRepository.GetStandardExpensesByUserIdAsync(userId,token);
+
+            if (getStandardExpenses.IsError)
+            {
+                return getStandardExpenses.Errors;
+            }
+
+            return new AllStandardExpenses
+            {
+                standardExpenses = getStandardExpenses.Value
+            };
+        }
     }
 }

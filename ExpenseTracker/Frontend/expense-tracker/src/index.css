@@ -1,0 +1,427 @@
+@import "tailwindcss";
+
+@layer components {
+  
+  /* ========== BUTTONS ========== */
+  .btn-primary {
+    width: 100%;
+    background: rgb(0, 0, 194);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(7, 102, 211, 0.3);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background: darkblue;
+    box-shadow: 0 10px 15px -3px rgba(7, 102, 211, 0.3);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    background: #e5e7eb;
+    color: #1f2937;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-secondary:hover {
+    background: #d1d5db;
+  }
+
+  .btn-danger {
+    width: 100%;
+    background: #ef4444;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background: #dc2626;
+  }
+
+  .btn-ghost {
+    color: #4b5563;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.15s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-ghost:hover {
+    color: #1f2937;
+  }
+
+  .btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #d11010;
+    color: #ffffff;
+    border-radius: 0.75rem;
+    transition: background 0.15s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-logout:hover {
+    background: #810808;
+  }
+
+  .btn-add {
+    width: 100%;
+    background: green;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(14, 97, 3, 0.3);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-add:hover{
+    background-color: darkgreen;
+  }
+
+  /* ========== INPUTS ========== */
+  .input-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #111827;
+    outline: none;
+    transition: all 0.15s;
+  }
+
+  .input-field::placeholder {
+    color: #9ca3af;
+  }
+
+  .input-field:focus {
+    background: white;
+    border-color: blue;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+
+  .input-search {
+    width: 100%;
+    padding-left: 2.5rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    outline: none;
+    transition: all 0.15s;
+  }
+
+  .input-search:focus {
+    background: white;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* ========== CARDS ========== */
+  .card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    transition: transform 0.2s;
+  }
+
+  .stat-card:hover {
+    transform: scale(1.05);
+  }
+
+  /* ========== AUTH LAYOUTS ========== */
+  .auth-layout {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+  }
+
+  .auth-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    border: 1px solid white;
+    padding: 2rem;
+  }
+
+  .reg-layout{
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position:relative;
+  }
+
+  .reg-card{
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    border: 1px solid white;
+    padding: 2rem;
+  }
+
+  /* ========== ALERTS ========== */
+  .alert-error {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .alert-success {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .alert-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* ========== ICONS ========== */
+  .icon-base {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-income {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #d1fae5;
+  }
+
+  .icon-expense {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fee2e2;
+  }
+
+  .icon-balance {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dbeafe;
+  }
+
+  /* ========== BADGES ========== */
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+  }
+
+  .badge-income {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: #d1fae5;
+    color: blue;
+  }
+
+  .badge-expense {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  /* ========== TRANSACTION CARDS ========== */
+  .transaction-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 0.75rem;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  .transaction-card:hover {
+    background: #f3f4f6;
+  }
+
+  /* ========== DASHBOARD ========== */
+  .page-container {
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, #eff6ff, #e0e7ff, #f3e8ff);
+  }
+
+  .content-wrapper {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .content-wrapper {
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .content-wrapper {
+      padding: 2rem 2rem;
+    }
+  }
+
+  .header {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-content {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .header-content {
+      padding: 1rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .header-content {
+      padding: 1rem 2rem;
+    }
+  }
+
+  .logo-container {
+    width: 3rem;
+    height: 3rem;
+    background: blue;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ==================== GLOBAL STYLES ==================== */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: black;
+    color: #111827;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}

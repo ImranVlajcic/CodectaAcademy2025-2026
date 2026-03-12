@@ -120,5 +120,19 @@ namespace ExpenseTracker.WebApi.Controllers.TransactionController
                 errors => Problem(errors)
             );
         }
+
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetTransactionsByUserId(CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetTransactions called by user: {UserId}", userId);
+
+            var result = await _transactionService.GetTransactionsByUserIdAsync(userId, cancellationToken);
+
+            return result.Match(
+                transactions => Ok(transactions),
+                errors => Problem(errors)
+            );
+        }
     }
 }

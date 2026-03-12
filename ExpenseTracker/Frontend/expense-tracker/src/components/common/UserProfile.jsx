@@ -1,0 +1,185 @@
+import { useNavigate } from 'react-router-dom';
+import { Mail, Lock } from 'lucide-react';
+import { authService } from '../../services/authService';
+import toast from 'react-hot-toast';
+import useUserProfile from '../../hooks/useUserProfile.js';
+import Button from '../common/Button';
+import Input from '../common/Input';
+import ErrorAlert from '../common/ErrorAlert.jsx'
+import accountService from '../../services/accountservice.js';
+import { useEffect } from "react";
+import PasswordRequirement from '../auth/PasswordRequirement.jsx';
+
+export default function UserProfile(){
+    //const navigate = useNavigate();
+
+    const currentUser = authService.getCurrentUser();
+    console.log("Current user:", currentUser);
+
+    const handleUpdate = async (values) => {
+    try {
+      const { confirmPassword, ...updateData } = values;
+      await accountService.update(currentUser.userId, updateData);
+      toast.success('Account updated successfully!');
+      //navigate('/userprofile');
+    } catch (err) {
+      console.error('Update error:', err);
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.errors?.[Object.keys(err.response.data.errors)[0]]?.[0] ||
+                          'Update failed. Please try again.';
+      setErrors({ submit: errorMessage });
+      throw new Error(errorMessage);
+    }
+  };
+
+      const { values, setValues, errors, loading, passwordChecks, handleChange, handleSubmit, setErrors } = useUserProfile(
+      { username: '', email: '', password: '', confirmPassword: '', realName: '', realSurname: '', phoneNumber: '' },
+      handleUpdate
+    );
+
+    useEffect(() => {
+        const loadUser = async () => {
+        try {
+            const userData = await accountService.getById(currentUser.userId);
+
+            setValues({
+                username: userData.username || "",
+                email: userData.email || "",
+                realName: userData.realName || "",
+                realSurname: userData.realSurname || "",
+                phoneNumber: userData.phoneNumber || "",
+                password: "",
+                confirmPassword: "",
+            });
+
+        } catch (err) {
+        console.error("Failed to fetch account info:", err);
+        toast.error("Failed to load account information");
+        }
+    };
+
+  loadUser();
+}, [currentUser.userId, setValues]);
+
+    return(
+    <form onSubmit={handleSubmit} className='space-y-6'>
+        <ErrorAlert 
+            message={errors.submit} 
+            onClose={() => setErrors({ ...errors, submit: '' })}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+            type="text"
+            id="username"
+            name="username"
+            label="Username"
+            placeholder="User1234"
+            value={values.username}
+            onChange={handleChange}
+            error={errors.username}
+        />
+
+        <Input
+            type="email"
+            id="email"
+            name="email"
+            label="Email"
+            placeholder="you@example.com"
+            value={values.email}
+            onChange={handleChange}
+            error={errors.email}
+            icon={Mail}
+        />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Input
+            type="text"
+            id="realName"
+            name="realName"
+            label="First Name"
+            placeholder="Name"
+            value={values.realName}
+            onChange={handleChange}
+            error={errors.realName}
+        />
+
+        <Input
+            type="text"
+            id="realSurname"
+            name="realSurname"
+            label="Last Name"
+            placeholder="Surname"
+            value={values.realSurname}
+            onChange={handleChange}
+            error={errors.realSurname}
+        />
+        </div>
+        <Input
+            type="tel"
+            id="phoneNumber"
+            name="phoneNumber"
+            label="Phone Number (optional)"
+            placeholder="+123456789"
+            value={values.phoneNumber}
+            onChange={handleChange}
+        />
+
+        <div>
+        <Input
+            type="password"
+            id="password"
+            name="password"
+            label="Password"
+            placeholder="••••••••"
+            value={values.password}
+            onChange={handleChange}
+            error={errors.password}
+            icon = {Lock}
+        />
+        {values.password && (
+          <div className="mt-3 space-y-2">
+            <PasswordRequirement 
+              met={passwordChecks.minLength} 
+              text="At least 8 characters" 
+            />
+            <PasswordRequirement 
+              met={passwordChecks.hasUpper} 
+              text="One uppercase letter" 
+            />
+            <PasswordRequirement 
+              met={passwordChecks.hasLower} 
+              text="One lowercase letter" 
+            />
+            <PasswordRequirement 
+              met={passwordChecks.hasNumber} 
+              text="One number" 
+            />
+            <PasswordRequirement 
+              met={passwordChecks.hasSpecial} 
+              text="One special character (!@#$%^&*)" 
+            />
+          </div>
+        )}
+        </div>
+        <Input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            label="Confirm Password"
+            placeholder="••••••••"
+            value={values.confirmPassword}
+            onChange={handleChange}
+            error={errors.confirmPassword}
+            icon = {Lock}
+        />
+
+        <Button
+            type="submit"
+            variant="primary"
+            loading={loading}
+        >
+            Update Account
+        </Button>
+    </form>
+    );
+}

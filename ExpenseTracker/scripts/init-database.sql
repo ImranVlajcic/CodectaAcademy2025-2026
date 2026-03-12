@@ -68,8 +68,8 @@ CREATE TABLE StandardExpense (
 );
 
 INSERT INTO Account (username, email, passwordHash, realName, realSurname, phoneNumber, createdAt, isActive) VALUES
-('mujo_mujic', 'mujo.mujic@gmail.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzpLaEkKrO', 'Mujo', 'Mujic', '+38761234567', CURRENT_TIMESTAMP, TRUE),
-('imran_vlajcic', 'imran.vlajcic@gmail.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzpLaEkKrO', 'Imran', 'Vlajcic', '+38762345678', CURRENT_TIMESTAMP, TRUE);
+('mujo_mujic', 'mujo.mujic@gmail.com', '$2a$12$NT61C5Z5wA2OqwsiuqNB/OacRPZKMnqGbomLy2rgyyCrxyAGUrbQa', 'Mujo', 'Mujic', '+38761234567', CURRENT_TIMESTAMP, TRUE),
+('imran_vlajcic', 'imran.vlajcic@gmail.com', '$2a$12$NT61C5Z5wA2OqwsiuqNB/OacRPZKMnqGbomLy2rgyyCrxyAGUrbQa', 'Imran', 'Vlajcic', '+38762345678', CURRENT_TIMESTAMP, TRUE);
 
 INSERT INTO Currency(currencyCode, currencyName, rateToEuro) VALUES
 ('EUR','Euro',1.0),

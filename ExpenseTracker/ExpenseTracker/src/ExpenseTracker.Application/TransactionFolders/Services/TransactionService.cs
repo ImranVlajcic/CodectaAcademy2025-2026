@@ -93,5 +93,20 @@ namespace ExpenseTracker.Application.TransactionFolders.Services
 
             return status;
         }
+
+        public async Task<ErrorOr<AllTransactions>> GetTransactionsByUserIdAsync(int userId, CancellationToken token)
+        {
+            var getTransactions = await _transactionRepository.GetTransactionsByUserIdAsync(userId, token);
+
+            if (getTransactions.IsError)
+            {
+                return getTransactions.Errors;
+            }
+
+            return new AllTransactions
+            {
+                transactions = getTransactions.Value
+            };
+        }
     }
 }

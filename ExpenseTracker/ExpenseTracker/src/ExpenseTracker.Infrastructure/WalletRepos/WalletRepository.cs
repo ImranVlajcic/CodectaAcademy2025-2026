@@ -311,5 +311,62 @@ namespace ExpenseTracker.Infrastructure.WalletRepos
                 return DatabaseErrors.Database.OperationFailed;
             }
         }
+
+        public async Task<ErrorOr<List<Wallet>>> GetWalletsByUserId(int userId, CancellationToken token)
+        {
+            var wallets = new List<Wallet>();
+
+            try
+            {
+                using var connection = CreateConnection();
+                await connection.OpenAsync(token);
+
+                const string sql = @"
+                SELECT walletID, userID, currencyID, balance, purpose
+                FROM Wallet
+                WHERE userID = @UserId
+                ORDER BY walletID";
+
+                using var command = new NpgsqlCommand(sql, connection);
+                command.CommandTimeout = 30;
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                using var reader = await command.ExecuteReaderAsync(token);
+
+                while (await reader.ReadAsync(token))
+                {
+                    wallets.Add(new Wallet
+                    {
+                        walletID = reader.GetInt32(0),
+                        userID = reader.GetInt32(1),
+                        currencyID = reader.GetInt32(2),
+                        balance = reader.GetDecimal(3),
+                        purpose = reader.GetString(4)
+                    });
+                }
+
+                return wallets;
+            }
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (NpgsqlException ex) when (ex.Message.Contains("connection"))
+            {
+                return DatabaseErrors.Database.ConnectionFailed;
+            }
+            catch (NpgsqlException)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+            catch (OperationCanceledException)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (Exception)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+        }
     }
 }

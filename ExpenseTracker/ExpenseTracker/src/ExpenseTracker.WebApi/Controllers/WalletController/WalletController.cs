@@ -51,14 +51,14 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
 
         [HttpPost]
         public async Task<IActionResult> CreateWallet(
-            [FromBody] WalletCon request,
+            [FromBody] WalletRequest request,
             CancellationToken cancellationToken)
         {
             var userId = GetCurrentUserId();
             _logger.LogInformation("CreateWallet called for user: {UserId}", userId);
             var wallet = new Wallet
             {
-                userID = request.userID,
+                userID = userId,
                 currencyID = request.currencyID,
                 balance = request.balance,
                 purpose = request.purpose
@@ -78,7 +78,7 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateWallet(
             int id,
-            [FromBody] WalletCon request,
+            [FromBody] WalletRequest request,
             CancellationToken cancellationToken)
         {
             var userId = GetCurrentUserId();
@@ -86,7 +86,7 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
             var wallet = new Wallet
             {
                 walletID = id,
-                userID = request.userID,
+                userID = userId,
                 currencyID = request.currencyID,
                 balance = request.balance,
                 purpose = request.purpose
@@ -109,6 +109,20 @@ namespace ExpenseTracker.WebApi.Controllers.WalletController
 
             return result.Match(
                 _ => NoContent(),
+                errors => Problem(errors)
+            );
+        }
+
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetWalletsByUser(CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetWallets called by user: {UserId}", userId);
+
+            var result = await _walletService.GetWalletsByUserId(userId, cancellationToken);
+
+            return result.Match(
+                wallets => Ok(wallets),
                 errors => Problem(errors)
             );
         }

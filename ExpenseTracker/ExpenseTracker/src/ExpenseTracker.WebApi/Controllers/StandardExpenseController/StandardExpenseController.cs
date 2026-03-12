@@ -116,5 +116,18 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
                 errors => Problem(errors)
             );
         }
+
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetStandardExpensesByUserId(CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            _logger.LogInformation("GetStandardExpenses called by user: {UserId}", userId);
+            var result = await _standardExpenseService.GetStandardExpensesByUserIdAsync(userId,cancellationToken);
+
+            return result.Match(
+                    standardexpense => Ok(standardexpense),
+                    errors => Problem(errors)
+                );
+        }
     }
 }

@@ -1,10 +1,10 @@
-﻿using ExpenseTracker.Application.TransactionFolders.Interface.Infrastructure;
+﻿using ErrorOr;
+using ExpenseTracker.Application.TransactionFolders.Interface.Infrastructure;
+using ExpenseTracker.Domain.Errors.DatabaseErrors;
+using ExpenseTracker.Domain.Errors.TransactionErrors;
 using ExpenseTracker.Domain.TransactionData;
 using ExpenseTracker.Infrastructure.TransactionRepos.Options;
 using Npgsql;
-using ErrorOr;
-using ExpenseTracker.Domain.Errors.TransactionErrors;
-using ExpenseTracker.Domain.Errors.DatabaseErrors;
 
 
 namespace ExpenseTracker.Infrastructure.TransactionRepos
@@ -318,6 +318,70 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
             catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation) 
             {
                 return TransactionErrors.Conflict.TransactionInUse;
+            }
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (NpgsqlException ex) when (ex.Message.Contains("connection"))
+            {
+                return DatabaseErrors.Database.ConnectionFailed;
+            }
+            catch (NpgsqlException)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+            catch (OperationCanceledException)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (Exception)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+        }
+
+        public async Task<ErrorOr<List<Transaction>>> GetTransactionsByUserIdAsync(int userId, CancellationToken token)
+        {
+            var transactions = new List<Transaction>();
+
+            try
+            {
+                using var connection = CreateConnection();
+                await connection.OpenAsync(token);
+
+
+                const string sql = @"
+            SELECT t.transactionID, t.walletID, t.categoryID, t.currencyID, 
+                   t.transactionTime, t.transactionDate, t.transactionType, t.amount, t.description
+            FROM Transactions t
+            INNER JOIN Wallet w ON t.walletID = w.walletID
+            WHERE w.userID = @UserId
+            ORDER BY t.transactionDate DESC, t.transactionTime DESC";
+
+                using var command = new NpgsqlCommand(sql, connection);
+                command.CommandTimeout = 30;
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                using var reader = await command.ExecuteReaderAsync(token);
+
+                while (await reader.ReadAsync(token))
+                {
+                    transactions.Add(new Transaction
+                    {
+                        transactionID = reader.GetInt32(0),
+                        walletID = reader.GetInt32(1),
+                        categoryID = reader.GetInt32(2),
+                        currencyID = reader.GetInt32(3),
+                        transactionTime = TimeOnly.FromDateTime(reader.GetDateTime(4)),
+                        transactionDate = DateOnly.FromDateTime(reader.GetDateTime(5)),
+                        transactionType = reader.GetString(6),
+                        amount = reader.GetDecimal(7),
+                        description = reader.GetString(8)
+                    });
+                }
+
+                return transactions;
             }
             catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
             {

@@ -318,5 +318,67 @@ namespace ExpenseTracker.Infrastructure.StandardExpenseRepos
                 return DatabaseErrors.Database.OperationFailed;
             }
         }
+
+        public async Task<ErrorOr<List<StandardExpense>>> GetStandardExpensesByUserIdAsync(int userId, CancellationToken token)
+        {
+
+            var standardExpenses = new List<StandardExpense>();
+
+            try
+            {
+                using var connection = CreateConnection();
+                await connection.OpenAsync(token);
+
+                const string sql = @"
+                SELECT s.expenseID, s.walletID, s.reason, 
+                       s.description, s.amount, s.frequency, s.nextDate
+                FROM StandardExpense s
+                INNER JOIN Wallet w on s.walletID = w.walletID
+                WHERE w.userID = @userId 
+                ORDER BY nextDate DESC";
+
+                using var command = new NpgsqlCommand(sql, connection);
+                command.CommandTimeout = 30;
+                command.Parameters.AddWithValue("@UserId", userId);
+                using var reader = await command.ExecuteReaderAsync(token);
+
+                while (await reader.ReadAsync(token))
+                {
+                    standardExpenses.Add(new StandardExpense
+                    {
+                        expenseID = reader.GetInt32(0),
+                        walletID = reader.GetInt32(1),
+                        reason = reader.GetString(2),
+                        description = reader.GetString(3),
+                        amount = reader.GetDecimal(4),
+                        frequency = reader.GetString(5),
+                        nextDate = DateOnly.FromDateTime(reader.GetDateTime(6))
+
+                    });
+                }
+
+                return standardExpenses;
+            }
+            catch (NpgsqlException ex) when (ex.InnerException is Timeout)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (NpgsqlException ex) when (ex.Message.Contains("connection"))
+            {
+                return DatabaseErrors.Database.ConnectionFailed;
+            }
+            catch (NpgsqlException)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+            catch (OperationCanceledException)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (Exception)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+        }
     }
 }

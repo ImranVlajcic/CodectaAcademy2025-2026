@@ -120,6 +120,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger.Information("Application starting");
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // Use your React URL here
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+
 var app = builder.Build();
 {
     app.UseRouting();
@@ -145,7 +157,8 @@ var app = builder.Build();
         c.DocumentTitle = "ExpenseTracker API";
     });
 
-    
+    app.UseCors("AllowReactApp"); //dodano
+
     app.UseAuthentication(); 
     app.UseAuthorization();
 

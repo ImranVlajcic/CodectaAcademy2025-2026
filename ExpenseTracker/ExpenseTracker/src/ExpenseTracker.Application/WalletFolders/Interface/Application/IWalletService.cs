@@ -12,5 +12,6 @@ namespace ExpenseTracker.Application.WalletFolders.Interface.Application
         Task<ErrorOr<Wallet>> CreateWalletAsync(Wallet wallet, CancellationToken token);
         Task<ErrorOr<Updated>> UpdateWalletAsync(Wallet wallet, CancellationToken token);
         Task<ErrorOr<Deleted>> DeleteWalletAsync(int walletId, CancellationToken token);
+        Task<ErrorOr<AllWallets>> GetWalletsByUserId(int userId, CancellationToken token);
     }
 }
