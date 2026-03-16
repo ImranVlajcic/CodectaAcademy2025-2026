@@ -12,8 +12,8 @@ namespace ExpenseTracker.Infrastructure.CurrencyRepos
     internal class CurrencyRepository : ICurrencyRepository
     {
         private readonly CurrencyOptions _options;
-        const string ForeignKeyViolation = "20503";
-        const string UniqueViolation = "20505";
+        const string ForeignKeyViolation = "23503";
+        const string UniqueViolation = "23505";
 
         public CurrencyRepository(CurrencyOptions options)
         {

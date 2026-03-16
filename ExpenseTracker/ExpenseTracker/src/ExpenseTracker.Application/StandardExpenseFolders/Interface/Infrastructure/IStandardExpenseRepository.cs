@@ -11,5 +11,6 @@ namespace ExpenseTracker.Application.StandardExpenseFolders.Interface.Infrastruc
         Task<ErrorOr<Updated>> UpdateStandardExpenseAsync(StandardExpense standardExpense, CancellationToken token);
         Task<ErrorOr<Deleted>> DeleteStandardExpenseAsync(int expenseId, CancellationToken token);
         Task<ErrorOr<List<StandardExpense>>> GetStandardExpensesByUserIdAsync(int userId, CancellationToken token);
+        Task<ErrorOr<List<StandardExpense>>> GetDueExpensesAsync(DateOnly dueDate, CancellationToken token);
     }
 }

@@ -5,15 +5,24 @@ import LoadingScreen from '../components/common/LoadingScreen';
 import StandardExpenseList from '../components/common/StandardExpenseList';
 import Button from '../components/common/Button';
 import { Plus } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function ListingPage() {
   const {
     user,
     transactions,
     standardExpenses,
+    categoryMap,
+    currencyMap,
+    walletMap,
+    walletToCurrencyMap,
     loading,
     handleLogout,
   } = useListing();
+
+  const navigate = useNavigate();
+  const { state } = useLocation();              
+  const walletId = state?.walletId
 
   if (loading) {
     return <LoadingScreen />;
@@ -27,7 +36,7 @@ export default function ListingPage() {
             variant="add"
             loading={loading}
             icon={Plus}
-            onClick={() => navigate('/add-wallet')}
+            onClick={() => navigate('/wallets/add-standard-expense', { state: { walletId } })}
           >
             Add Standard Expense
           </Button>
@@ -36,7 +45,7 @@ export default function ListingPage() {
             variant="add"
             loading={loading}
             icon={Plus}
-            onClick={() => navigate('/add-wallet')}
+            onClick={() => navigate('/wallets/add-transaction', { state: { walletId } })}
           >
             Add Transaction
           </Button>
@@ -44,10 +53,15 @@ export default function ListingPage() {
       <div className="flex flex-col gap-6 mt-6">
               <TransactionList 
               transactions={transactions}
+              categoryMap={categoryMap}
+              currencyMap={currencyMap}
+              walletMap={walletMap}
             />
       
             <StandardExpenseList
               standardExpenses={standardExpenses}
+              walletToCurrencyMap={walletToCurrencyMap}
+              walletMap={walletMap}
             />
             </div>
     </DashboardLayout>

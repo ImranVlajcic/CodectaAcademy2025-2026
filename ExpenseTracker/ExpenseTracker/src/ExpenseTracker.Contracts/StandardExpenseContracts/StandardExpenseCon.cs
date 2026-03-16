@@ -12,7 +12,7 @@ namespace ExpenseTracker.Contracts.StandardExpenseContracts
         public string reason { get; set; }
         public string description { get; set; }
         public decimal amount { get; set; }
-        public string frrquency { get; set; }
+        public string frequency { get; set; }
         public DateOnly nextDate { get; set; }
     }
 }

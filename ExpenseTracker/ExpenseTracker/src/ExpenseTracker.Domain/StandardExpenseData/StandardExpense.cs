@@ -12,14 +12,14 @@
         public DateOnly nextDate { get; set; }
 
         public StandardExpense() { }
-        public StandardExpense(int expenseID, int walletID, string reason, string description, decimal amount, string frrquency, DateOnly nextDate)
+        public StandardExpense(int expenseID, int walletID, string reason, string description, decimal amount, string frequency, DateOnly nextDate)
         {
             this.expenseID = expenseID;
             this.walletID = walletID;
             this.reason = reason;
             this.description = description;
             this.amount = amount;
-            this.frequency = frrquency;
+            this.frequency = frequency;
             this.nextDate = nextDate;
         }
     }

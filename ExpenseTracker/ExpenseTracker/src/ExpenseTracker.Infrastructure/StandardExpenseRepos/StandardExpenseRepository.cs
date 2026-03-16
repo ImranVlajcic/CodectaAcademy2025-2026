@@ -12,8 +12,8 @@ namespace ExpenseTracker.Infrastructure.StandardExpenseRepos
     internal class StandardExpenseRepository : IStandardExpenseRepository
     {
         private readonly StandardExpenseOptions _options;
-        const string ForeignKeyViolation = "20503";
-        const string UniqueViolation = "20505";
+        const string ForeignKeyViolation = "23503";
+        const string UniqueViolation = "23505";
 
         public StandardExpenseRepository(StandardExpenseOptions options)
         {
@@ -360,6 +360,66 @@ namespace ExpenseTracker.Infrastructure.StandardExpenseRepos
                 return standardExpenses;
             }
             catch (NpgsqlException ex) when (ex.InnerException is Timeout)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (NpgsqlException ex) when (ex.Message.Contains("connection"))
+            {
+                return DatabaseErrors.Database.ConnectionFailed;
+            }
+            catch (NpgsqlException)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+            catch (OperationCanceledException)
+            {
+                return DatabaseErrors.Database.Timeout;
+            }
+            catch (Exception)
+            {
+                return DatabaseErrors.Database.OperationFailed;
+            }
+        }
+
+        public async Task<ErrorOr<List<StandardExpense>>> GetDueExpensesAsync(DateOnly dueDate, CancellationToken token)
+        {
+            var expenses = new List<StandardExpense>();
+
+            try
+            {
+                using var connection = CreateConnection();
+                await connection.OpenAsync(token);
+
+                const string sql = @"
+            SELECT expenseID, walletID, reason, description, amount, frequency, nextDate
+            FROM StandardExpense
+            WHERE nextDate <= @DueDate
+            ORDER BY nextDate ASC";
+
+                using var command = new NpgsqlCommand(sql, connection);
+                command.CommandTimeout = 30;
+                //command.Parameters.AddWithValue("@DueDate", dueDate);
+                command.Parameters.AddWithValue("@DueDate", dueDate.ToDateTime(TimeOnly.MinValue));
+
+                using var reader = await command.ExecuteReaderAsync(token);
+
+                while (await reader.ReadAsync(token))
+                {
+                    expenses.Add(new StandardExpense
+                    {
+                        expenseID = reader.GetInt32(0),
+                        walletID = reader.GetInt32(1),
+                        reason = reader.GetString(2),
+                        description = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                        amount = reader.GetDecimal(4),
+                        frequency = reader.GetString(5),
+                        nextDate = DateOnly.FromDateTime(reader.GetDateTime(6))
+                    });
+                }
+
+                return expenses;
+            }
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
             {
                 return DatabaseErrors.Database.Timeout;
             }

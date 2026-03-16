@@ -8,7 +8,7 @@ export default function WalletCard({ wallet}){
     
 
     return<div className="stat-card gap-6 mb-8"
-          onClick = {() => navigate('/wallets/listing')}
+          onClick = {() => navigate('/wallets/listing', { state: { walletId: wallet.walletID } })}
         >
         <div className="flex items-center justify-between mb-4">
         <div className={`text-3xl h-12 font-bold flex items-center justify-center `}>

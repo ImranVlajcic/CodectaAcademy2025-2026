@@ -114,5 +114,20 @@ namespace ExpenseTracker.Application.StandardExpenseFolders.Services
                 standardExpenses = getStandardExpenses.Value
             };
         }
+
+        public async Task<ErrorOr<AllStandardExpenses>> GetDueExpensesAsync(DateOnly dueDate, CancellationToken token)
+        {
+            var getStandardExpenses = await _standardExpenseRepository.GetDueExpensesAsync(dueDate, token);
+
+            if (getStandardExpenses.IsError)
+            {
+                return getStandardExpenses.Errors;
+            }
+
+            return new AllStandardExpenses
+            {
+                standardExpenses = getStandardExpenses.Value
+            };
+        }
     }
 }

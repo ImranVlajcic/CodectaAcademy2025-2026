@@ -1,10 +1,12 @@
 ﻿using ErrorOr;
 using ExpenseTracker.Application.StandardExpenseFolders.Interface.Application;
+using ExpenseTracker.Application.StandardExpenseFolders.Services;
 using ExpenseTracker.Contracts.StandardExpenseContracts;
 using ExpenseTracker.Domain.StandardExpenseData;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
 {
@@ -15,10 +17,12 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
     {
         private readonly IStandardExpenseService _standardExpenseService;
         private readonly ILogger<StandardExpenseController> _logger;
+        private readonly StandardExpenseProcessor _processor;
 
-        public StandardExpenseController(IStandardExpenseService standardExpenseService, ILogger<StandardExpenseController> logger)
+        public StandardExpenseController(IStandardExpenseService standardExpenseService, StandardExpenseProcessor processor, ILogger<StandardExpenseController> logger)
         {
             _standardExpenseService = standardExpenseService;
+            _processor = processor;
             _logger = logger;
         }
 
@@ -62,7 +66,7 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
                 reason = request.reason,
                 description = request.description,
                 amount = request.amount,
-                frequency = request.frrquency,
+                frequency = request.frequency,
                 nextDate = request.nextDate
             };
 
@@ -92,7 +96,7 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
                 reason = request.reason,
                 description = request.description,
                 amount = request.amount,
-                frequency = request.frrquency,
+                frequency = request.frequency,
                 nextDate = request.nextDate
             };
 
@@ -128,6 +132,24 @@ namespace ExpenseTracker.WebApi.Controllers.StandardExpenseController
                     standardexpense => Ok(standardexpense),
                     errors => Problem(errors)
                 );
+        }
+
+        [HttpPost("process-due")]
+        public async Task<IActionResult> ProcessDueExpenses(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Manual trigger: Processing due standard expenses");
+
+            var result = await _processor.ProcessDueExpensesAsync(cancellationToken);
+
+            return result.Match(
+                count => Ok(new
+                {
+                    message = "Standard expenses processed successfully",
+                    processedCount = count,
+                    timestamp = DateTime.Now
+                }),
+                errors => Problem(errors)
+            );
         }
     }
 }

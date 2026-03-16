@@ -1,6 +1,6 @@
 import api from './api';
 
-export const walletService = {
+export const categoryService = {
   getAll: async () => {
     const response = await api.get('/Category');
     return response.data;
@@ -27,4 +27,4 @@ export const walletService = {
   },
 };
 
-export default transactionService;
+export default categoryService;

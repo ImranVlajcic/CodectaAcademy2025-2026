@@ -11,8 +11,6 @@ import { useEffect } from "react";
 import PasswordRequirement from '../auth/PasswordRequirement.jsx';
 
 export default function UserProfile(){
-    //const navigate = useNavigate();
-
     const currentUser = authService.getCurrentUser();
     console.log("Current user:", currentUser);
 
@@ -21,7 +19,6 @@ export default function UserProfile(){
       const { confirmPassword, ...updateData } = values;
       await accountService.update(currentUser.userId, updateData);
       toast.success('Account updated successfully!');
-      //navigate('/userprofile');
     } catch (err) {
       console.error('Update error:', err);
       const errorMessage = err.response?.data?.detail || 

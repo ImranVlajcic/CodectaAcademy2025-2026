@@ -4,14 +4,17 @@ import { authService } from '../services/authService';
 import transactionService from '../services/transactionService';
 import toast from 'react-hot-toast';
 import expenseService from '../services/standardexpenseservice';
+import categoryService from '../services/categoryService';
+import currencyService from '../services/currencyservice';
+import walletService from '../services/walletservice';
 
 export default function useListing() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const [transactions, setTransactions] = useState([]);
   const [standardExpenses, setExpenses] = useState([]);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [filteredStandardExpenses, setFilteredExpenses] = useState([]);
+  const [wallets, setWallets] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
@@ -26,7 +29,6 @@ export default function useListing() {
         
         const data = response.transactions|| response || [];
         setTransactions(data);
-        setFilteredTransactions(data);
         toast.success(`Loaded ${data.length} transactions`, {
         id: 'transaction-toast', 
         });
@@ -45,7 +47,6 @@ export default function useListing() {
         
         const data = response.standardExpenses || response || [];
         setExpenses(data);
-        setFilteredExpenses(data);
         toast.success(`Loaded ${data.length} standard expenses`, {
         id: 'expense-toast', 
         });
@@ -57,8 +58,53 @@ export default function useListing() {
       }
     };
 
+    const fetchWallets = async () => {
+      try {
+        const response = await walletService.getAllByUser();
+        console.log('API Response:', response);
+        
+        const data = response.wallets || response || [];
+        setWallets(data);
+      } catch (err) {
+        console.error('Failed to fetch wallets:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryService.getAll();
+        console.log('API Response:', response);
+        
+        const data = response.categories || response || [];
+        setCategories(data);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchCurrencies = async () => {
+      try {
+        const response = await currencyService.getAll();
+        console.log('API Response:', response);
+        
+        const data = response.currencies || response || [];
+        setCurrencies(data);
+      } catch (err) {
+        console.error('Failed to fetch currencies:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTransactions();
     fetchExpenses();
+    fetchWallets();
+    fetchCategories();
+    fetchCurrencies();
   }, []);
 
   const handleLogout = async () => {
@@ -67,10 +113,42 @@ export default function useListing() {
     navigate('/login');
   }; 
 
+  const categoryMap = useMemo(() => {
+  return categories.reduce((acc, cat) => {
+    acc[cat.categoryID] = cat.categoryName;
+    return acc;
+  }, {});
+}, [categories]);
+
+const currencyMap = useMemo(() => {
+  return currencies.reduce((acc, cur) => {
+    acc[cur.currencyID] = cur.currencyCode; 
+    return acc;
+  }, {});
+}, [currencies]);
+
+const walletMap = useMemo(() => {
+  return wallets.reduce((acc, cur) => {
+    acc[cur.walletID] = cur.purpose; 
+    return acc;
+  }, {});
+}, [wallets]);
+
+const walletToCurrencyMap = useMemo(() => {
+  return wallets.reduce((acc, wallet) => {
+    acc[wallet.walletID] = currencyMap[wallet.currencyID];
+    return acc;
+  }, {});
+}, [wallets, currencyMap]);
+
   return {
     user,
-    transactions: filteredTransactions,
-    standardExpenses: filteredStandardExpenses,
+    transactions,
+    standardExpenses,
+    categoryMap,
+    currencyMap,
+    walletMap,
+    walletToCurrencyMap,
     loading,
     handleLogout,
   };

@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function TransactionCard({ transaction }) {
+export default function TransactionCard({ transaction, onClick ,currencyCode}) {
   const isIncome = transaction.amount > 0;
   const amount = parseFloat(transaction.amount) || 0;
   
@@ -11,13 +11,15 @@ export default function TransactionCard({ transaction }) {
   };
   
   return (
-    <div className="transaction-card">
+    <div className="transaction-card"
+      onClick={() => onClick(transaction)}
+    >
       <div className="flex items-center gap-4">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-          isIncome ? 'bg-emerald-100' : 'bg-red-100'
+          isIncome ? 'bg-green-100' : 'bg-red-100'
         }`}>
           {isIncome ? (
-            <TrendingUp className="w-6 h-6 text-emerald-600" />
+            <TrendingUp className="w-6 h-6 text-green-600" />
           ) : (
             <TrendingDown className="w-6 h-6 text-red-600" />
           )}
@@ -40,7 +42,7 @@ export default function TransactionCard({ transaction }) {
         <p className={`text-lg font-bold ${
           isIncome ? 'text-green-600' : 'text-red-600'
         }`}>
-          {isIncome ? '+' : '-'}${Math.abs(amount).toFixed(2)}
+          {isIncome ? '+' : '-'}{Math.abs(amount).toFixed(2)}{'('}{currencyCode}{')'}
         </p>
         <p className="text-xs text-gray-500 mt-1">
           {formatTime(transaction.transactionTime) || 'N/A'}

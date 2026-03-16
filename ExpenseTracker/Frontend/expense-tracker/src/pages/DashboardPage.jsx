@@ -5,7 +5,6 @@ import SearchBar from '../components/common/SearchBar';
 import TransactionList from '../components/common/TransactionList';
 import LoadingScreen from '../components/common/LoadingScreen';
 import InfoCardMain from '../components/common/InfoCardMain';
-import StandardExpenseCard from '../components/common/StandardExpenseCard';
 import StandardExpenseList from '../components/common/StandardExpenseList';
 
 export default function DashboardPage() {
@@ -15,6 +14,10 @@ export default function DashboardPage() {
     setSearchQuery,
     transactions,
     standardExpenses,
+    categoryMap,
+    currencyMap,
+    walletMap,
+    walletToCurrencyMap,
     loading,
     stats,
     overallStats,
@@ -42,8 +45,11 @@ export default function DashboardPage() {
 
       <StatsGrid stats={stats} />
       <div className="flex flex-col gap-6 mt-6">
-        <TransactionList 
+      <TransactionList 
         transactions={transactions}
+        categoryMap={categoryMap}
+        currencyMap={currencyMap}
+        walletMap={walletMap}
         searchQuery={searchQuery}
         onClearSearch={handleClearSearch}
       />
@@ -51,6 +57,8 @@ export default function DashboardPage() {
       <StandardExpenseList
         standardExpenses={standardExpenses}
         searchQuery={searchQuery}
+        walletToCurrencyMap={walletToCurrencyMap}
+        walletMap={walletMap}
         onClearSearch={handleClearSearch}
       />
       </div>

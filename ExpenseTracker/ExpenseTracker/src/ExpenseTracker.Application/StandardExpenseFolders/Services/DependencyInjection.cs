@@ -9,6 +9,9 @@ namespace ExpenseTracker.Application.StandardExpenseFolders.Services
         public static IServiceCollection AddStandardExpenseApplication(this IServiceCollection services)
         {
             services.TryAddScoped<IStandardExpenseService, StandardExpenseService>();
+
+            services.TryAddScoped<StandardExpenseProcessor>();
+
             return services;
         }
     }

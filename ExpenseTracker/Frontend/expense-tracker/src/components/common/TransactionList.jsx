@@ -1,15 +1,30 @@
 import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import TransactionCard from './TransactionCard';
 import { useState } from 'react';
+import TransactionModal from './TransactionModal';
 
 export default function TransactionList({ 
-  transactions, 
+  transactions,
+  categoryMap,
+  currencyMap,
+  walletMap, 
   searchQuery, 
   onClearSearch 
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+ 
+  const handleTransactionClick = (transaction) => {
+    setSelectedTransaction(transaction);
+  };
+ 
+  const handleCloseModal = () => {
+    setSelectedTransaction(null);
+  };
+  
 
   return (
+    <>
     <div className="card">
       <div className="flex items-center justify-between mb-6">
         <div 
@@ -41,22 +56,35 @@ export default function TransactionList({
       </div>
 
       {isExpanded && (
-        <>
-          {transactions.length > 0 ? (
-            <div className="space-y-3 animate-in fade-in duration-300">
-              {transactions.map((transaction) => (
-                <TransactionCard 
-                  key={transaction.transactionID} 
-                  transaction={transaction} 
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState searchQuery={searchQuery} />
-          )}
-        </>
+          <>
+            {transactions.length > 0 ? (
+              <div className="space-y-3 animate-in fade-in duration-300">
+                {transactions.map((transaction) => (
+                  <TransactionCard 
+                    key={transaction.transactionID} 
+                    transaction={transaction}
+                    currencyCode={currencyMap[transaction.currencyID]}
+                    onClick={handleTransactionClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState searchQuery={searchQuery} />
+            )}
+          </>
+        )}
+      </div>
+
+      {selectedTransaction && (
+        <TransactionModal 
+          transaction={selectedTransaction}
+          onClose={handleCloseModal}
+          categoryName={categoryMap[selectedTransaction.categoryID]}
+          currencyCode={currencyMap[selectedTransaction.currencyID]}
+          walletName={walletMap[selectedTransaction.walletID]}
+        />
       )}
-    </div>
+      </>
   );
 }
 

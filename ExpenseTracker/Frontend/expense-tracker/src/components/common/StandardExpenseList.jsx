@@ -1,16 +1,29 @@
 import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import StandardExpenseCard from './StandardExpenseCard';
 import { useState } from 'react';
+import StandardExpenseModal from './StandardExpenseModal';
 
 export default function StandardExpenseList({ 
   standardExpenses, 
-  searchQuery, 
+  searchQuery,
+  walletToCurrencyMap,
+  walletMap,
   onClearSearch 
 }) {
 
   const [isExpanded, setIsExpanded] = useState(true);
+  const [selectedExpense, setSelectedExpense] = useState(null);
+ 
+  const handleExpenseClick = (expense) => {
+    setSelectedExpense(expense);
+  };
+ 
+  const handleCloseModal = () => {
+    setSelectedExpense(null);
+  };
   
   return (
+    <>
     <div className="card mt-6"> 
       <div className="flex items-center justify-between mb-6">
         
@@ -43,22 +56,34 @@ export default function StandardExpenseList({
       </div>
 
       {isExpanded && (
-        <>
-          {standardExpenses.length > 0 ? (
-            <div className="space-y-3">
-              {standardExpenses.map((standardExpense) => (
-                <StandardExpenseCard
-                  key={standardExpense.expenseID} 
-                  standardExpense={standardExpense} 
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState searchQuery={searchQuery} />
-          )}
-        </>
+          <>
+            {standardExpenses.length > 0 ? (
+              <div className="space-y-3">
+                {standardExpenses.map((standardExpense) => (
+                  <StandardExpenseCard
+                    key={standardExpense.expenseID} 
+                    standardExpense={standardExpense}
+                    currencyCode={walletToCurrencyMap[standardExpense.walletID] || '???'}
+                    onClick={handleExpenseClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState searchQuery={searchQuery} />
+            )}
+          </>
+        )}
+      </div>
+ 
+      {selectedExpense && (
+        <StandardExpenseModal 
+          standardExpense={selectedExpense}
+          currencyCode={walletToCurrencyMap[selectedExpense.walletID] || '???'}
+          walletName={walletMap[selectedExpense.walletID]}
+          onClose={handleCloseModal}
+        />
       )}
-    </div>
+    </>
   );
 }
 

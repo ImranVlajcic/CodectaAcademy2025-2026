@@ -1,5 +1,6 @@
 using ExpenseTracker.Application;
 using ExpenseTracker.WebApi;
+using ExpenseTracker.Infrastructure.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -116,6 +117,8 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services
         .AddApplication(builder.Configuration)
         .AddInfrastructure(builder.Configuration);
+
+    builder.Services.AddHostedService<StandardExpenseBackgroundService>();
 }
 
 Log.Logger.Information("Application starting");
@@ -125,7 +128,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173") // Use your React URL here
+            policy.WithOrigins("http://localhost:5173") 
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -157,7 +160,7 @@ var app = builder.Build();
         c.DocumentTitle = "ExpenseTracker API";
     });
 
-    app.UseCors("AllowReactApp"); //dodano
+    app.UseCors("AllowReactApp"); 
 
     app.UseAuthentication(); 
     app.UseAuthorization();

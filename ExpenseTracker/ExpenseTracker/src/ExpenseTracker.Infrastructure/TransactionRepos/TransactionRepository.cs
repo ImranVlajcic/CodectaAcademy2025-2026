@@ -12,8 +12,8 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
     internal class TransactionRepository : ITransactionRepository
     {
         private readonly TransactionOptions _options;
-        const string ForeignKeyViolation = "20503";
-        const string UniqueViolation = "20505";
+        const string ForeignKeyViolation = "23503";
+        const string UniqueViolation = "23505";
 
         public TransactionRepository(TransactionOptions options)
         {
@@ -147,17 +147,19 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
 
         public async Task<ErrorOr<Transaction>> CreateTransactionAsync(Transaction transaction, CancellationToken token)
         {
+            using var connection = CreateConnection();
+            await connection.OpenAsync(token);
+
+            using var dbTransaction = await connection.BeginTransactionAsync(token);
+
             try
             {
-                using var connection = CreateConnection();
-                await connection.OpenAsync(token);
-
                 const string sql = @"
-                INSERT INTO Transactions (walletID, categoryID, currencyID, transactionTime, transactionDate, transactionType, amount, description)
-                VALUES (@WalletID, @CategoryID, @CurrencyID, @TransactionTime, @TransactionDate, @TransactionType, @Amount, @Description)
-                RETURNING transactionID";
+        INSERT INTO Transactions (walletID, categoryID, currencyID, transactionTime, transactionDate, transactionType, amount, description)
+        VALUES (@WalletID, @CategoryID, @CurrencyID, @TransactionTime, @TransactionDate, @TransactionType, @Amount, @Description)
+        RETURNING transactionID";
 
-                using var command = new NpgsqlCommand(sql, connection);
+                using var command = new NpgsqlCommand(sql, connection, dbTransaction);  
                 command.CommandTimeout = 30;
                 command.Parameters.AddWithValue("@WalletID", transaction.walletID);
                 command.Parameters.AddWithValue("@CategoryID", transaction.categoryID);
@@ -175,16 +177,31 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
                     return DatabaseErrors.Database.OperationFailed;
                 }
 
+                string sqlUpdateWallet = $@"
+        UPDATE Wallet 
+        SET balance = balance + @Amount 
+        WHERE walletID = @WalletID";
+
+                using var cmdUpdate = new NpgsqlCommand(sqlUpdateWallet, connection, dbTransaction);
+                cmdUpdate.Parameters.AddWithValue("@Amount", transaction.amount);
+                cmdUpdate.Parameters.AddWithValue("@WalletID", transaction.walletID);
+
+                await cmdUpdate.ExecuteNonQueryAsync(token);
+
+                await dbTransaction.CommitAsync(token);
+
                 transaction.transactionID = Convert.ToInt32(transactionId);
 
                 return transaction;
             }
-            catch(NpgsqlException ex) when(ex.SqlState == UniqueViolation) 
+            catch (NpgsqlException ex) when (ex.SqlState == UniqueViolation)
             {
+                await dbTransaction.RollbackAsync(token);
                 return DatabaseErrors.Database.DuplicateRow;
             }
-            catch (NpgsqlException ex) when(ex.SqlState == ForeignKeyViolation) 
+            catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation)
             {
+                await dbTransaction.RollbackAsync(token);
                 if (ex.Message.Contains("Wallet"))
                     return TransactionErrors.Validation.InvalidWalletId;
                 if (ex.Message.Contains("Category"))
@@ -194,24 +211,29 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
 
                 return DatabaseErrors.Database.OperationFailed;
             }
-            catch (NpgsqlException ex) when(ex.InnerException is TimeoutException)
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException)
             {
+                await dbTransaction.RollbackAsync(token);
                 return DatabaseErrors.Database.Timeout;
             }
-            catch (NpgsqlException ex) when(ex.Message.Contains("connection"))
+            catch (NpgsqlException ex) when (ex.Message.Contains("connection"))
             {
+                await dbTransaction.RollbackAsync(token);
                 return DatabaseErrors.Database.ConnectionFailed;
             }
             catch (NpgsqlException)
             {
+                await dbTransaction.RollbackAsync(token);
                 return DatabaseErrors.Database.OperationFailed;
             }
             catch (OperationCanceledException)
             {
+                await dbTransaction.RollbackAsync(token);
                 return DatabaseErrors.Database.Timeout;
             }
             catch (Exception)
             {
+                await dbTransaction.RollbackAsync(token);
                 return DatabaseErrors.Database.OperationFailed;
             }
         }

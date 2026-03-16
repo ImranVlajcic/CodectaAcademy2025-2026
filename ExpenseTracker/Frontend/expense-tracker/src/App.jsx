@@ -10,7 +10,8 @@ import StatisticsPage from './pages/StatisticsPage'
 import WalletsPage from './pages/WalletsPage';
 import AddWalletPage from './pages/AddWalletPage';
 import ListingPage from './pages/ListingPage';
-
+import AddStandardExpensePage from './pages/AddStandardExpensePage';
+import AddTransactionPage from './pages/AddTransactionPage';
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = authService.isAuthenticated();
@@ -113,6 +114,23 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/wallets/add-transaction"
+          element={
+            <ProtectedRoute>
+              <AddTransactionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wallets/add-standard-expense"
+          element={
+            <ProtectedRoute>
+              <AddStandardExpensePage />
+            </ProtectedRoute>
+          }
+        />
+        
         
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

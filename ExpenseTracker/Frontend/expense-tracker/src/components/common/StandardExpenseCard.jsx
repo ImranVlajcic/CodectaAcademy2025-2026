@@ -1,10 +1,12 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function StandardExpenseCard({ standardExpense }) {
+export default function StandardExpenseCard({ standardExpense, onClick, currencyCode }) {
   const amount = parseFloat(standardExpense.amount) || 0;
   
   return (
-    <div className="transaction-card">
+    <div className="transaction-card"
+    onClick={() => onClick(standardExpense)}
+    >
       <div className="flex items-center gap-4">
         
 
@@ -25,7 +27,7 @@ export default function StandardExpenseCard({ standardExpense }) {
       </div>
       <div className="text-right">
         <p className={`text-lg font-bold text-red-600`}>
-          {'-'}${Math.abs(amount).toFixed(2)}
+          {'-'}{Math.abs(amount).toFixed(2)}{'('}{currencyCode}{')'}
         </p>
         <p className="text-xs text-gray-500 mt-1">
           {standardExpense.frequency || 'N/A'}

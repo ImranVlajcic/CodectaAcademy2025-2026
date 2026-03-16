@@ -12,8 +12,8 @@ namespace ExpenseTracker.Infrastructure.WalletRepos
     internal class WalletRepository : IWalletRepository
     {
         private readonly WalletOptions _options;
-        const string ForeignKeyViolation = "20503";
-        const string UniqueViolation = "20505";
+        const string ForeignKeyViolation = "23503";
+        const string UniqueViolation = "23505";
 
         public WalletRepository(WalletOptions options)
         {
@@ -144,7 +144,7 @@ namespace ExpenseTracker.Infrastructure.WalletRepos
                 const string sql = @"
                 INSERT INTO Wallet (userID, currencyID, balance, purpose)
                 VALUES (@UserID, @CurrencyID, @Balance, @Purpose )
-                RETURNING userID";
+                RETURNING walletID";
 
                 using var command = new NpgsqlCommand(sql, connection);
                 command.CommandTimeout = 30;

@@ -1,25 +1,34 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import transactionService from '../services/transactionService';
-import toast from 'react-hot-toast';
+import transactionService from '../services/transactionservice';
 import expenseService from '../services/standardexpenseservice';
+import toast from 'react-hot-toast';
 import walletService from '../services/walletservice';
 import categoryService from '../services/categoryService';
 import currencyService from '../services/currencyservice';
 
-export default function useDashboard() {
+export default function useTransactionsFilter() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [standardExpenses, setExpenses] = useState([]);
-  const [wallets, setWallets] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [wallets, setWallets] = useState([]);
   const [currencies, setCurrencies] = useState([]);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [filteredStandardExpenses, setFilteredExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+
+  const [filters, setFilters] = useState({
+    amountMin: 0,
+    amountMax: 999999,
+    showOnlyIncome: false,
+    showOnlyExpenses: false,
+    categories: [],
+    transactionTypes: [], 
+    frequencies: [], 
+    dateFrom: '',
+    dateTo: '',
+  });
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
@@ -32,7 +41,6 @@ export default function useDashboard() {
         
         const data = response.transactions|| response || [];
         setTransactions(data);
-        setFilteredTransactions(data);
         toast.success(`Loaded ${data.length} transactions`, {
         id: 'transaction-toast', 
         });
@@ -51,7 +59,6 @@ export default function useDashboard() {
         
         const data = response.standardExpenses || response || [];
         setExpenses(data);
-        setFilteredExpenses(data);
         toast.success(`Loaded ${data.length} standard expenses`, {
         id: 'expense-toast', 
         });
@@ -112,75 +119,87 @@ export default function useDashboard() {
     fetchCurrencies();
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
-
-    const filteredTransaction = transactions.filter(t => 
-      t.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.transactionType?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const filteredStandard = standardExpenses.filter(t => 
-      t.reason?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredTransactions(filteredTransaction);
-    setFilteredExpenses(filteredStandard)
+  const updateFilter = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setFilteredTransactions(transactions);
-    setFilteredExpenses(standardExpenses)
+  const resetFilters = () => {
+    setFilters({
+      amountMin: 0,
+      amountMax: 999999,
+      showOnlyIncome: false,
+      showOnlyExpenses: false,
+      categories: [],
+      transactionTypes: [],
+      frequencies: [],
+      dateFrom: '',
+      dateTo: '',
+    });
   };
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(transaction => {
+      const amount = Math.abs(parseFloat(transaction.amount) || 0);
+      const isIncome = parseFloat(transaction.amount) > 0;
+
+      if (amount < filters.amountMin || amount > filters.amountMax) {
+        return false;
+      }
+
+      if (filters.showOnlyIncome && !isIncome) return false;
+      if (filters.showOnlyExpenses && isIncome) return false;
+
+      if (filters.categories.length > 0 && !filters.categories.includes(transaction.categoryID)) {
+        return false;
+      }
+
+      if (filters.transactionTypes.length > 0 && !filters.transactionTypes.includes(transaction.transactionType)) {
+        return false;
+      }
+
+      if (filters.dateFrom && transaction.transactionDate < filters.dateFrom) {
+        return false;
+      }
+      if (filters.dateTo && transaction.transactionDate > filters.dateTo) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [transactions, filters]);
+
+  const filteredStandardExpenses = useMemo(() => {
+    return standardExpenses.filter(expense => {
+      const amount = Math.abs(parseFloat(expense.amount) || 0);
+
+      if (amount < filters.amountMin || amount > filters.amountMax) {
+        return false;
+      }
+
+      if (filters.showOnlyIncome) return false;
+
+      if (filters.frequencies.length > 0 && !filters.frequencies.includes(expense.frequency)) {
+        return false;
+      }
+
+      if (filters.dateFrom && expense.nextDate < filters.dateFrom) {
+        return false;
+      }
+      if (filters.dateTo && expense.nextDate > filters.dateTo) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [standardExpenses, filters]);
 
   const handleLogout = async () => {
     await authService.logout();
     toast.success('Logged out successfully');
     navigate('/login');
-  }; 
-
-  const overallStats = useMemo(() => {
-  const transactionStats = transactions.reduce((acc, t) => {
-    const currency = currencies.find(c => c.currencyID === t.currencyID);
-    const rate = currency?.rateToEuro || 1;
-    const amountInEuro = (parseFloat(t.amount) || 0) * rate;
-
-    if (amountInEuro > 0) acc.income += amountInEuro;
-    else acc.expense += Math.abs(amountInEuro);
-    
-    return acc;
-  }, { income: 0, expense: 0 });
-
-  const totalWalletBalanceInEuro = wallets.reduce((acc, wallet) => {
-    const currency = currencies.find(c => c.currencyID === wallet.currencyID);
-    const rate = currency?.rateToEuro || 1;
-    return acc + ((parseFloat(wallet.balance) || 0) * rate);
-  }, 0);
-
-  return {
-    income: transactionStats.income,
-    expense: transactionStats.expense,
-    total: totalWalletBalanceInEuro 
   };
-}, [transactions, currencies, wallets]);
 
-  const stats = filteredTransactions.reduce((acc, t) => {
-    const currency = currencies.find(c => c.currencyID === t.currencyID);
-    const rate = currency?.rateToEuro || 1;
-    const amountInEuro = (parseFloat(t.amount) || 0) * rate;
-    if (amountInEuro>0) {
-      acc.income += amountInEuro;
-    } else {
-      acc.expense += Math.abs(amountInEuro);
-    }
-    acc.total = acc.income - acc.expense;
-    return acc;
-  }, { income: 0, expense: 0, total: 0 });
-
-const categoryMap = useMemo(() => {
+  const categoryMap = useMemo(() => {
   return categories.reduce((acc, cat) => {
     acc[cat.categoryID] = cat.categoryName;
     return acc;
@@ -208,22 +227,21 @@ const walletToCurrencyMap = useMemo(() => {
   }, {});
 }, [wallets, currencyMap]);
 
-
   return {
     user,
-    searchQuery,
-    setSearchQuery,
-    transactions: filteredTransactions,
-    standardExpenses: filteredStandardExpenses,
+    loading,
+    transactions,
+    standardExpenses,
+    filteredTransactions,
+    filteredStandardExpenses,
+    filters,
     categoryMap,
     currencyMap,
     walletMap,
     walletToCurrencyMap,
-    loading,
-    stats,
-    overallStats,
-    handleSearch,
-    handleClearSearch,
+    updateFilter,
+    resetFilters,
+    categories,
     handleLogout,
   };
 }

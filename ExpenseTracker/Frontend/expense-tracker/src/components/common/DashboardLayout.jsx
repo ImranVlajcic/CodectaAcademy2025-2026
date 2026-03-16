@@ -1,4 +1,4 @@
-import { LogOut } from 'lucide-react';
+import { LogOut, UserIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function DashboardLayout({ user, onLogout, children }) {
@@ -47,10 +47,8 @@ export default function DashboardLayout({ user, onLogout, children }) {
               to="/userprofile"
               className="block hover:opacity-80 transition-opacity"
             >
-            <img
-              src="/temp.jpg"
-              alt="user"
-              className="w-8 h-8 rounded-full ring-2"
+            <UserIcon 
+               className="w-8 h-8 rounded-full ring-2"
             />
             </Link>
             </div>

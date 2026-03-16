@@ -11,8 +11,8 @@ namespace ExpenseTracker.Infrastructure.CategoryRepos
     internal class CategoryRepository : ICategoryRepository
     {
         private readonly CategoryOptions _options;
-        const string ForeignKeyViolation = "20503";
-        const string UniqueViolation = "20505";
+        const string ForeignKeyViolation = "23503";
+        const string UniqueViolation = "23505";
 
         public CategoryRepository(CategoryOptions options)
         {
