@@ -155,11 +155,11 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
             try
             {
                 const string sql = @"
-        INSERT INTO Transactions (walletID, categoryID, currencyID, transactionTime, transactionDate, transactionType, amount, description)
-        VALUES (@WalletID, @CategoryID, @CurrencyID, @TransactionTime, @TransactionDate, @TransactionType, @Amount, @Description)
-        RETURNING transactionID";
+                INSERT INTO Transactions (walletID, categoryID, currencyID, transactionTime, transactionDate, transactionType, amount, description)
+                VALUES (@WalletID, @CategoryID, @CurrencyID, @TransactionTime, @TransactionDate, @TransactionType, @Amount, @Description)
+                RETURNING transactionID";
 
-                using var command = new NpgsqlCommand(sql, connection, dbTransaction);  
+                using var command = new NpgsqlCommand(sql, connection, dbTransaction);
                 command.CommandTimeout = 30;
                 command.Parameters.AddWithValue("@WalletID", transaction.walletID);
                 command.Parameters.AddWithValue("@CategoryID", transaction.categoryID);
@@ -177,21 +177,56 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
                     return DatabaseErrors.Database.OperationFailed;
                 }
 
-                string sqlUpdateWallet = $@"
-        UPDATE Wallet 
-        SET balance = balance + @Amount 
-        WHERE walletID = @WalletID";
+                const string sqlGetCurrencies = @"
+                SELECT w.currencyID, 
+                       wc.rateToEuro as walletRate, 
+                       tc.rateToEuro as transactionRate
+                FROM Wallet w
+                INNER JOIN Currency wc ON w.currencyID = wc.currencyID
+                INNER JOIN Currency tc ON tc.currencyID = @TransactionCurrencyID
+                WHERE w.walletID = @WalletID";
 
-                using var cmdUpdate = new NpgsqlCommand(sqlUpdateWallet, connection, dbTransaction);
-                cmdUpdate.Parameters.AddWithValue("@Amount", transaction.amount);
-                cmdUpdate.Parameters.AddWithValue("@WalletID", transaction.walletID);
+                decimal convertedAmount;
+                using (var cmdGetCurrencies = new NpgsqlCommand(sqlGetCurrencies, connection, dbTransaction))
+                {
+                    cmdGetCurrencies.Parameters.AddWithValue("@WalletID", transaction.walletID);
+                    cmdGetCurrencies.Parameters.AddWithValue("@TransactionCurrencyID", transaction.currencyID);
+                    cmdGetCurrencies.CommandTimeout = 30;
 
-                await cmdUpdate.ExecuteNonQueryAsync(token);
+                    using var reader = await cmdGetCurrencies.ExecuteReaderAsync(token);
+
+                    if (!await reader.ReadAsync(token))
+                    {
+                        await dbTransaction.RollbackAsync(token);
+                        return TransactionErrors.Validation.InvalidWalletId;
+                    }
+
+                    var walletCurrencyId = reader.GetInt32(0);
+                    var walletRate = reader.GetDecimal(1);
+                    var transactionRate = reader.GetDecimal(2);
+
+                    var amountInEuro = transaction.amount / transactionRate;
+
+                    convertedAmount = amountInEuro * walletRate;
+                }
+
+                string sqlUpdateWallet = @"
+                UPDATE Wallet 
+                SET balance = balance + @Amount 
+                WHERE walletID = @WalletID";
+
+                using (var cmdUpdate = new NpgsqlCommand(sqlUpdateWallet, connection, dbTransaction))
+                {
+                    cmdUpdate.Parameters.AddWithValue("@Amount", convertedAmount);
+                    cmdUpdate.Parameters.AddWithValue("@WalletID", transaction.walletID);
+                    cmdUpdate.CommandTimeout = 30;
+
+                    await cmdUpdate.ExecuteNonQueryAsync(token);
+                }
 
                 await dbTransaction.CommitAsync(token);
 
                 transaction.transactionID = Convert.ToInt32(transactionId);
-
                 return transaction;
             }
             catch (NpgsqlException ex) when (ex.SqlState == UniqueViolation)
@@ -202,6 +237,7 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
             catch (NpgsqlException ex) when (ex.SqlState == ForeignKeyViolation)
             {
                 await dbTransaction.RollbackAsync(token);
+
                 if (ex.Message.Contains("Wallet"))
                     return TransactionErrors.Validation.InvalidWalletId;
                 if (ex.Message.Contains("Category"))
@@ -318,22 +354,80 @@ namespace ExpenseTracker.Infrastructure.TransactionRepos
 
         public async Task<ErrorOr<Deleted>> DeleteTransactionAsync(int transactionId, CancellationToken token)
         {
+            using var connection = CreateConnection();
+            await connection.OpenAsync(token);
+
+            using var dbTransaction = await connection.BeginTransactionAsync(token);
+
             try
             {
-                using var connection = CreateConnection();
-                await connection.OpenAsync(token);
+                const string sqlGetTransaction = @"
+                    SELECT t.walletID, t.currencyID, t.amount,
+                           wc.rateToEuro as walletRate,
+                           tc.rateToEuro as transactionRate
+                    FROM Transactions t
+                    INNER JOIN Wallet w ON t.walletID = w.walletID
+                    INNER JOIN Currency wc ON w.currencyID = wc.currencyID
+                    INNER JOIN Currency tc ON t.currencyID = tc.currencyID
+                    WHERE t.transactionID = @TransactionId";
 
-                const string sql = "DELETE FROM Transactions WHERE transactionID = @TransactionId";
+                int walletId;
+                decimal convertedAmount;
 
-                using var command = new NpgsqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@TransactionId", transactionId);
-                command.CommandTimeout = 30;
-
-                var rowsAffected = await command.ExecuteNonQueryAsync(token);
-                if (rowsAffected == 0)
+                using (var cmdGet = new NpgsqlCommand(sqlGetTransaction, connection, dbTransaction))
                 {
-                    return TransactionErrors.NotFound.Transaction;
+                    cmdGet.Parameters.AddWithValue("@TransactionId", transactionId);
+                    cmdGet.CommandTimeout = 30;
+
+                    using var reader = await cmdGet.ExecuteReaderAsync(token);
+
+                    if (!await reader.ReadAsync(token))
+                    {
+                        await dbTransaction.RollbackAsync(token);
+                        return TransactionErrors.NotFound.Transaction;
+                    }
+
+                    walletId = reader.GetInt32(0);
+                    var transactionCurrencyId = reader.GetInt32(1);
+                    var transactionAmount = reader.GetDecimal(2);
+                    var walletRate = reader.GetDecimal(3);
+                    var transactionRate = reader.GetDecimal(4);
+
+                    var amountInEuro = transactionAmount / transactionRate;
+                    convertedAmount = amountInEuro * walletRate;
                 }
+
+                const string sqlUpdateWallet = @"
+                    UPDATE Wallet 
+                    SET balance = balance - @Amount 
+                    WHERE walletID = @WalletId";
+
+                using (var cmdUpdate = new NpgsqlCommand(sqlUpdateWallet, connection, dbTransaction))
+                {
+                    cmdUpdate.Parameters.AddWithValue("@Amount", convertedAmount);
+                    cmdUpdate.Parameters.AddWithValue("@WalletId", walletId);
+                    cmdUpdate.CommandTimeout = 30;
+
+                    await cmdUpdate.ExecuteNonQueryAsync(token);
+                }
+
+                const string sqlDelete = "DELETE FROM Transactions WHERE transactionID = @TransactionId";
+
+                using (var cmdDelete = new NpgsqlCommand(sqlDelete, connection, dbTransaction))
+                {
+                    cmdDelete.Parameters.AddWithValue("@TransactionId", transactionId);
+                    cmdDelete.CommandTimeout = 30;
+
+                    var rowsAffected = await cmdDelete.ExecuteNonQueryAsync(token);
+
+                    if (rowsAffected == 0)
+                    {
+                        await dbTransaction.RollbackAsync(token);
+                        return TransactionErrors.NotFound.Transaction;
+                    }
+                }
+
+                await dbTransaction.CommitAsync(token);
 
                 return Result.Deleted;
             }

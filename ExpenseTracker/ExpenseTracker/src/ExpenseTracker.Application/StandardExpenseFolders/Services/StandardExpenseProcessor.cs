@@ -111,7 +111,7 @@ namespace ExpenseTracker.Application.StandardExpenseFolders.Services
             var transaction = new Transaction
             {
                 walletID = expense.walletID,
-                categoryID = 1, 
+                categoryID = 12, 
                 currencyID = wallet.currencyID,
                 amount = expense.amount,
                 transactionType = "Cash",

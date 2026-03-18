@@ -1,10 +1,8 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
-
-export default function StandardExpenseCard({ standardExpense, onClick, currencyCode }) {
+export default function StandardExpenseCard({ standardExpense, onClick, currencyCode, isSelected = false  }) {
   const amount = parseFloat(standardExpense.amount) || 0;
   
   return (
-    <div className="transaction-card"
+    <div className={`transaction-card ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}
     onClick={() => onClick(standardExpense)}
     >
       <div className="flex items-center gap-4">

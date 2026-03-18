@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import toast from 'react-hot-toast';
@@ -34,6 +34,15 @@ export default function useWallets() {
     fetchWallets();
   }, []);
 
+  const handleWalletDeleted = useCallback((deletedWalletId) => {
+    // Optimistically remove from UI
+    setWallets(prev => prev.filter(w => w.walletID !== deletedWalletId));
+    
+    // Optional: Refetch to ensure data consistency
+    // fetchWallets();
+  }, []);
+
+
   const handleLogout = async () => {
     await authService.logout();
     toast.success('Logged out successfully');
@@ -45,5 +54,6 @@ export default function useWallets() {
     wallets,
     loading,
     handleLogout,
+    handleWalletDeleted,
   };
 }

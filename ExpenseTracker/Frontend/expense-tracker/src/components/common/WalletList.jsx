@@ -1,7 +1,8 @@
 import WalletCard from './WalletsCard';
 
 export default function WalletsList({ 
-  wallets = [], 
+  wallets = [],
+  onWalletDeleted, 
 }) {
   return (
     <div>
@@ -10,12 +11,13 @@ export default function WalletsList({
           {wallets.map((wallet) => (
             <WalletCard
               key={wallet.walletID} 
-              wallet={wallet} 
+              wallet={wallet}
+              onDelete={onWalletDeleted} 
             />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed">
+        <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed mb-6">
           <p className="text-gray-500">No wallets found. Create one to get started!</p>
         </div>
       )}

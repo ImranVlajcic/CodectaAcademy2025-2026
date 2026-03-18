@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import transactionService from '../services/transactionService';
@@ -113,6 +113,47 @@ export default function useListing() {
     navigate('/login');
   }; 
 
+  const handleDeleteTransactions = async (transactionIds) => {
+    try {
+      const deletePromises = transactionIds.map(id => 
+        transactionService.delete(id)
+      );
+ 
+      await Promise.all(deletePromises);
+ 
+      setTransactions(prev => 
+        prev.filter(t => !transactionIds.includes(t.transactionID))
+      );
+ 
+      toast.success(`Successfully deleted ${transactionIds.length} transaction${transactionIds.length > 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Failed to delete transactions:', error);
+      toast.error('Failed to delete transactions');
+      throw error;
+    }
+  };
+ 
+  const handleDeleteExpenses = async (expenseIds) => {
+    try {
+
+      const deletePromises = expenseIds.map(id => 
+        expenseService.delete(id)
+      );
+ 
+      await Promise.all(deletePromises);
+ 
+      setExpenses(prev => 
+        prev.filter(e => !expenseIds.includes(e.expenseID))
+      );
+ 
+      toast.success(`Successfully deleted ${expenseIds.length} expense${expenseIds.length > 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Failed to delete expenses:', error);
+      toast.error('Failed to delete expenses');
+      throw error;
+    }
+  };
+
   const categoryMap = useMemo(() => {
   return categories.reduce((acc, cat) => {
     acc[cat.categoryID] = cat.categoryName;
@@ -151,5 +192,14 @@ const walletToCurrencyMap = useMemo(() => {
     walletToCurrencyMap,
     loading,
     handleLogout,
+    handleDeleteTransactions,
+    handleDeleteExpenses,
+    refreshData: () =>{
+        fetchTransactions(),
+        fetchCategories(),
+        fetchCurrencies(),
+        fetchWallets(),
+        fetchExpenses()
+    },
   };
 }

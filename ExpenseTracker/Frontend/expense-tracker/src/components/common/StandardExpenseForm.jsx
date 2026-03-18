@@ -50,7 +50,7 @@ export default function StandardExpenseForm() {
 
       await standardExpenseService.create(expenseData);
       toast.success('Recurring expense created successfully!');
-      navigate('/wallets/listing');
+      navigate('/wallets');
     } catch (err) {
       console.error('Creation error:', err);
       const errorMessage = err.response?.data?.detail || 

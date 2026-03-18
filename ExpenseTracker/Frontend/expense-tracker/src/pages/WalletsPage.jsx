@@ -12,6 +12,7 @@ export default function WalletsPage() {
     loading,
     wallets,
     handleLogout,
+    handleWalletDeleted,
   } = useWallets();
 
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function WalletsPage() {
 
       <WalletsList
         wallets={wallets}
+        onWalletDeleted={handleWalletDeleted}
       />
       <Button
         type="submit"

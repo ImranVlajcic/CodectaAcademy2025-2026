@@ -18,18 +18,18 @@ export default function MonthlyBarChart({ data, selectedMonth }) {
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-1">Monthly Overview</h2>
         <p className="text-sm text-gray-500">
-          {monthName ? `${monthName} - ` : ''}Daily income, expenses, and recurring charges
+          {monthName ? `${monthName} - ` : ''}Daily income and expenses
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <div className="p-3 bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg border border-emerald-100">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-emerald-600" />
             <span className="text-xs text-emerald-700 font-semibold">Income</span>
           </div>
           <p className="text-lg font-bold text-emerald-900">
-            ${totals.income.toFixed(2)}
+            {totals.income.toFixed(2)}
           </p>
         </div>
 
@@ -39,17 +39,7 @@ export default function MonthlyBarChart({ data, selectedMonth }) {
             <span className="text-xs text-red-700 font-semibold">Expenses</span>
           </div>
           <p className="text-lg font-bold text-red-900">
-            ${totals.expense.toFixed(2)}
-          </p>
-        </div>
-
-        <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-          <div className="flex items-center gap-2 mb-1">
-            <Repeat className="w-4 h-4 text-purple-600" />
-            <span className="text-xs text-purple-700 font-semibold">Recurring</span>
-          </div>
-          <p className="text-lg font-bold text-purple-900">
-            ${totals.standardExpense.toFixed(2)}
+            {totals.expense.toFixed(2)}
           </p>
         </div>
       </div>
@@ -75,7 +65,7 @@ export default function MonthlyBarChart({ data, selectedMonth }) {
               borderRadius: '8px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }}
-            formatter={(value) => `$${value.toFixed(2)}`}
+            formatter={(value) => `${value.toFixed(2)}`}
           />
           <Legend 
             wrapperStyle={{ paddingTop: '20px' }}
@@ -91,12 +81,6 @@ export default function MonthlyBarChart({ data, selectedMonth }) {
             dataKey="expense" 
             fill="#ef4444" 
             name="Expenses" 
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar 
-            dataKey="standardExpense" 
-            fill="#a855f7" 
-            name="Recurring" 
             radius={[4, 4, 0, 0]}
           />
         </BarChart>

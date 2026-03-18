@@ -21,8 +21,6 @@ export default function useWalletForm(initialValues, onSubmit) {
       await onSubmit(values);
     } catch (error) {
       setErrors({ submit: error.message });
-    } finally {
-      setLoading(false);
     }
   };
 
