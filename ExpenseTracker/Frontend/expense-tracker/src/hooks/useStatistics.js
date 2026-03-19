@@ -60,6 +60,20 @@ export default function useStatistics() {
     fetchData();
   }, []);
 
+  const currencyMap = useMemo(() => {
+    return currencies.reduce((acc, currency) => {
+      acc[currency.currencyID] = currency.rateToEuro;
+      return acc;
+    }, {});
+  }, [currencies]);
+
+  const walletToCurrencyMap = useMemo(() => {
+    return wallets.reduce((acc, wallet) => {
+      acc[wallet.walletID] = wallet.currencyID;
+      return acc;
+    }, {});
+  }, [wallets]);
+
   const overallStats = useMemo(() => {
   const transactionStats = transactions.reduce((acc, t) => {
     const currency = currencies.find(c => c.currencyID === t.currencyID);
@@ -108,10 +122,13 @@ export default function useStatistics() {
       const day = parseInt(t.transactionDate?.split('-')[2] || 0);
       if (day > 0 && day <= daysInMonth) {
         const amount = parseFloat(t.amount) || 0;
-        if (amount > 0) {
-          dailyData[day].income += amount;
+        const rate = currencyMap[t.currencyID] || 1;
+        const amountInEuro = amount * rate;
+        
+        if (amountInEuro > 0) {
+          dailyData[day].income += amountInEuro;
         } else {
-          dailyData[day].expense += Math.abs(amount);
+          dailyData[day].expense += Math.abs(amountInEuro);
         }
       }
     });
@@ -123,7 +140,11 @@ export default function useStatistics() {
       if (expenseMonth === selectedMonth) {
         const day = nextDate.getDate();
         if (day > 0 && day <= daysInMonth) {
-          dailyData[day].standardExpense += Math.abs(parseFloat(se.amount) || 0);
+          const walletCurrencyId = walletToCurrencyMap[se.walletID];
+          const rate = currencyMap[walletCurrencyId] || 1;
+          
+          const amountInEuro = Math.abs(parseFloat(se.amount) || 0) * rate;
+          dailyData[day].standardExpense += amountInEuro;
         }
       }
     });
@@ -140,25 +161,33 @@ export default function useStatistics() {
 
   const categoryData = useMemo(() => {
     if (categories.length === 0 || monthlyTransactions.length === 0) return [];
-
+ 
     const categoryTotals = {};
-
+ 
     monthlyTransactions.forEach(t => {
+      const amount = parseFloat(t.amount) || 0;
+
+      if (amount >= 0) return;
+
+      const absAmount = Math.abs(parseFloat(t.amount) || 0);
+
       const categoryName = categoryMap[t.categoryID] || 'Uncategorized';
-      const amount = Math.abs(parseFloat(t.amount) || 0);
+    
+      const rate = currencyMap[t.currencyID] || 1;
+      const amountInEuro = absAmount * rate;
       
       if (!categoryTotals[categoryName]) {
         categoryTotals[categoryName] = 0;
       }
-      categoryTotals[categoryName] += amount;
+      categoryTotals[categoryName] += amountInEuro;
     });
-
+ 
     return Object.entries(categoryTotals).map(([name, value]) => ({
       name,
       value: parseFloat(value.toFixed(2))
     }))
     .sort((a, b) => b.value - a.value);
-  }, [monthlyTransactions, categoryMap, categories]);
+  }, [monthlyTransactions, categoryMap, categories, currencyMap]);
 
   const handleLogout = async () => {
     await authService.logout();

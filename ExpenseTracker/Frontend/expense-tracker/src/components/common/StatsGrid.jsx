@@ -22,7 +22,7 @@ export default function StatsGrid({ stats }) {
       
       <StatCard
         amount={stats.total}
-        subtitle={`${stats.total >= 0 ? 'Positive' : 'Negative'} balance`}
+        subtitle={`${stats.total >= 0 ? 'Positive' : 'Negative'} ratio`}
         icon={<DollarSign className="w-6 h-6 text-blue-600" />}
         iconBg="bg-blue-100"
         badgeColor="text-blue-600 bg-blue-50"

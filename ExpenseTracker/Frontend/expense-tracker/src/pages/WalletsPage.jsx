@@ -11,6 +11,7 @@ export default function WalletsPage() {
     user,
     loading,
     wallets,
+    currencyMap,
     handleLogout,
     handleWalletDeleted,
   } = useWallets();
@@ -26,6 +27,7 @@ export default function WalletsPage() {
 
       <WalletsList
         wallets={wallets}
+        currencyMap={currencyMap}
         onWalletDeleted={handleWalletDeleted}
       />
       <Button

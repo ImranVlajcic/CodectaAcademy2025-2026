@@ -34,6 +34,14 @@ export default function ListingPage() {
     return <LoadingScreen />;
   }
 
+  const filteredTransactions = walletId
+  ? transactions.filter(t => t.walletID === walletId)
+  : transactions;
+
+  const filteredExpenses = walletId
+  ? standardExpenses.filter(se => se.walletID === walletId)
+  : standardExpenses;
+
   return (
     <DashboardLayout user={user} onLogout={handleLogout}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
@@ -75,7 +83,7 @@ export default function ListingPage() {
 
       <div className="flex flex-col gap-6 mt-6">
               <TransactionList 
-              transactions={transactions}
+              transactions={filteredTransactions}
               categoryMap={categoryMap}
               currencyMap={currencyMap}
               walletMap={walletMap}
@@ -84,7 +92,7 @@ export default function ListingPage() {
             />
       
             <StandardExpenseList
-              standardExpenses={standardExpenses}
+              standardExpenses={filteredExpenses}
               walletToCurrencyMap={walletToCurrencyMap}
               walletMap={walletMap}
               selectionMode={selectionMode}

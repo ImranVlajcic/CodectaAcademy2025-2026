@@ -82,7 +82,7 @@ export default function CategoryPieChart({ data }) {
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
                 formatter={(value, name, props) => [
-                  `$${value.toFixed(2)} (${props.payload.percentage}%)`,
+                  `${value.toFixed(2)} (${props.payload.percentage}%)`,
                   name
                 ]}
               />
@@ -103,7 +103,7 @@ export default function CategoryPieChart({ data }) {
                   <span className="font-medium text-gray-900">{entry.name}</span>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gray-900">${entry.value.toFixed(2)}</p>
+                  <p className="font-bold text-gray-900">{entry.value.toFixed(2)}</p>
                   <p className="text-xs text-gray-500">{entry.percentage}%</p>
                 </div>
               </div>

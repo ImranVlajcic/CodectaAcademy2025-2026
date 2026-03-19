@@ -5,7 +5,7 @@ import DeleteWalletModal from '../common/DeleteWalletModal';
 import walletService from '../../services/walletservice';
 import toast from 'react-hot-toast';
 
-export default function WalletCard({ wallet, onDelete}){
+export default function WalletCard({ wallet, onDelete, currencyCode}){
     const navigate = useNavigate();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -61,7 +61,7 @@ export default function WalletCard({ wallet, onDelete}){
         >
           <div className="flex items-center justify-between mb-4">
             <div className="text-3xl h-12 font-bold flex items-center justify-center pr-12">
-              <p>{wallet.purpose}</p>
+              <p>{wallet.purpose} ({currencyCode})</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">

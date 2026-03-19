@@ -2,6 +2,7 @@ import WalletCard from './WalletsCard';
 
 export default function WalletsList({ 
   wallets = [],
+  currencyMap,
   onWalletDeleted, 
 }) {
   return (
@@ -13,6 +14,7 @@ export default function WalletsList({
               key={wallet.walletID} 
               wallet={wallet}
               onDelete={onWalletDeleted} 
+              currencyCode={currencyMap[wallet.currencyID]}
             />
           ))}
         </div>

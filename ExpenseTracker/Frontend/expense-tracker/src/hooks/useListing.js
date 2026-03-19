@@ -29,9 +29,6 @@ export default function useListing() {
         
         const data = response.transactions|| response || [];
         setTransactions(data);
-        toast.success(`Loaded ${data.length} transactions`, {
-        id: 'transaction-toast', 
-        });
       } catch (err) {
         console.error('Failed to fetch transactions:', err);
         toast.error('Failed to load transactions');
@@ -47,9 +44,6 @@ export default function useListing() {
         
         const data = response.standardExpenses || response || [];
         setExpenses(data);
-        toast.success(`Loaded ${data.length} standard expenses`, {
-        id: 'expense-toast', 
-        });
       } catch (err) {
         console.error('Failed to fetch standard expenses:', err);
         toast.error('Failed to load standard expenses');
